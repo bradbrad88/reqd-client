@@ -1,0 +1,43 @@
+<mxfile host="65bd71144e">
+    <diagram id="EX0Rqgb18uTULCslkE04" name="Page-1">
+        <mxGraphModel dx="2049" dy="705" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="9" value="Order Form" style="whiteSpace=wrap;html=1;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="190" y="90" width="690" height="550" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="Area" style="whiteSpace=wrap;html=1;verticalAlign=top;" vertex="1" parent="1">
+                    <mxGeometry x="240" y="180" width="620" height="390" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="280" y="220" width="490" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="295" y="240" width="490" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="History" style="whiteSpace=wrap;html=1;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="315" y="290" width="450" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="Item" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="315" y="250" width="50" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="WeeklyHistory" style="whiteSpace=wrap;html=1;verticalAlign=top;" parent="1" vertex="1">
+                    <mxGeometry x="334" y="300" width="105" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="itemName, history[], historyRange" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" parent="1" vertex="1">
+                    <mxGeometry x="415" y="255" width="220" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="items, historyRange" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" parent="1" vertex="1">
+                    <mxGeometry x="510" y="130" width="220" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="History range could be an array of Week IDs / Order IDs.&lt;br&gt;Use this to map out WeeklyHistory components in the correct places" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="115" width="390" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="sold, ordered" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" parent="1" vertex="1">
+                    <mxGeometry x="385" y="340" width="90" height="25" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
