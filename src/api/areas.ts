@@ -16,3 +16,7 @@ export const createArea = async ({
 }) => {
   await axios.post(`/venue/${venueId}/area`, { areaName });
 };
+
+export const deleteArea = async ({ venueId, areaId }: { venueId: string; areaId: string }) => {
+  await axios.delete(`/venue/${venueId}/area/${areaId}`);
+};
