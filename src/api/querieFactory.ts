@@ -1,7 +1,7 @@
 import { useQuery } from "react-query";
 import axios from "config/axios";
 
-type Resource = string; // "areas" | "products" | "vendors";
+type Resource = string;
 
 export const keys = {
   all: (venueId: string, resource: Resource) => [venueId, resource] as const,
@@ -35,12 +35,12 @@ export const detailFactory =
   <Data>(resource: Resource) =>
   (id: string, venueId: string) => {
     const key = keys.detail(venueId, resource, id);
-    const { data } = useQuery(
+    const { data, status } = useQuery(
       key,
       async ({ queryKey: [venueId, resource, resourceType, id] }): Promise<Data> => {
         const res = await axios.get(`/venue/${venueId}/${resource}/${resourceType}/${id}`);
         return res.data.data;
       }
     );
-    return { data };
+    return { data, status };
   };
