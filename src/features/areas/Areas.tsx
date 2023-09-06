@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useQuery } from "react-query";
 import { getAreas } from "../../api/areas";
+import venueContext from "../../contexts/VenueContext";
 import Area from "./Area";
 import CreateArea from "./CreateArea";
 
 const Areas = () => {
+  const { venueId } = useContext(venueContext);
   const [toggleCreateForm, setToggleCreateForm] = useState(false);
-  const { data } = useQuery(
-    ["areas", "fab75a74-a16b-46db-b8c7-b32cd6a641fa"],
-    ({ queryKey }) => getAreas(queryKey[1] as string)
+  const { data } = useQuery(["areas", venueId], ({ queryKey }) =>
+    getAreas(queryKey[1] as string)
   );
 
   const renderAreas = () => {

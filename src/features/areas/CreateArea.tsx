@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { createArea } from "../../api/areas";
+import Form from "../../common/Form";
+import CallToAction from "../../common/CallToAction";
+import { useNavigate } from "react-router-dom";
+import { useVenueContext } from "../../hooks/useContexts";
 
-type Props = {
-  close: () => void;
-};
-
-const CreateArea = ({ close }: Props) => {
+const CreateArea = () => {
   const [areaName, setAreaName] = useState("");
+  const { venueId } = useVenueContext();
+
   const queryClient = useQueryClient();
+  const nav = useNavigate();
   const mutation = useMutation("areas", createArea, {
     onSuccess: () => {
       setAreaName("");
@@ -16,10 +19,7 @@ const CreateArea = ({ close }: Props) => {
     },
   });
 
-  const venueId = "fab75a74-a16b-46db-b8c7-b32cd6a641fa";
-
   const onChange: React.ChangeEventHandler<HTMLInputElement> = event => {
-    // event.preventDefault();
     const { value } = event.target;
     setAreaName(value);
   };
@@ -27,15 +27,19 @@ const CreateArea = ({ close }: Props) => {
     mutation.mutate({ venueId, areaName });
   };
 
+  const onClose = () => {
+    nav("../", { relative: "path" });
+  };
+
   return (
     <div className="border-[1px] border-indigo-700 rounded-md shadow-md shadow-black p-2 flex flex-col gap-5">
       <div className="flex">
         <h2 className="text-xl">Create a new area in your venue</h2>
-        <button className="bg-orange-800 font-bold text-lg p-1 px-6" onClick={close}>
+        <button className="bg-orange-800 font-bold text-lg p-1 px-6" onClick={onClose}>
           Close
         </button>
       </div>
-      <form className="flex flex-col gap-3" onSubmit={e => e.preventDefault()}>
+      <Form>
         <div className="flex flex-col text-lg">
           <label htmlFor="areaName" className="font-bold">
             Area Name
@@ -49,10 +53,8 @@ const CreateArea = ({ close }: Props) => {
             value={areaName}
           />
         </div>
-        <button onClick={onCreate} className="p-2 bg-lime-600">
-          Create
-        </button>
-      </form>
+        <CallToAction action={onCreate}>Create</CallToAction>
+      </Form>
     </div>
   );
 };
