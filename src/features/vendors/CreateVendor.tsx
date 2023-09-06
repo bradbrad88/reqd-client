@@ -1,16 +1,17 @@
-import CallToAction from "common/CallToAction";
-import { useCreateVendor } from "./queries";
-import { useContext, useState } from "react";
-import venueContext from "ctx/VenueContext";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useVenueContext } from "src/hooks/useContexts";
+import { useCreateVendor } from "./queries";
+import CallToAction from "common/CallToAction";
 import Form from "common/Form";
 import Field from "common/Field";
 import { Input } from "common/Inputs";
 
 const CreateVendor = () => {
-  const { mutate, status } = useCreateVendor();
+  const { venueId } = useVenueContext();
   const nav = useNavigate();
-  const { venueId } = useContext(venueContext);
+  const { mutate, status } = useCreateVendor();
+
   const [vendorName, setVendorName] = useState("");
   const [repName, setRepName] = useState("");
 

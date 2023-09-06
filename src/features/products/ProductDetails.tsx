@@ -1,10 +1,9 @@
 import { useNavigate, useParams } from "react-router-dom";
-import venueContext from "ctx/VenueContext";
 import { useDeleteProduct, useProductDetail } from "./queries";
-import { useContext } from "react";
+import { useVenueContext } from "src/hooks/useContexts";
 
 const ProductDetails = () => {
-  const { venueId } = useContext(venueContext);
+  const { venueId } = useVenueContext();
   const { productId } = useParams<{ productId: string }>();
   const { product } = useProductDetail(venueId, productId!);
   const { mutate } = useDeleteProduct(venueId, productId!);
@@ -25,7 +24,8 @@ const ProductDetails = () => {
 
   return (
     <div>
-      {product?.displayName}
+      {product.displayName}
+      {product.size}
       <button onClick={onDelete}>Delete</button>
     </div>
   );

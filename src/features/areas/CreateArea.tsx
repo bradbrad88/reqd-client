@@ -1,30 +1,23 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "react-query";
-import { createArea } from "../../api/areas";
 import Form from "../../common/Form";
 import CallToAction from "../../common/CallToAction";
 import { useNavigate } from "react-router-dom";
 import { useVenueContext } from "../../hooks/useContexts";
+import { useCreateArea } from "src/hooks/useAreas";
 
 const CreateArea = () => {
-  const [areaName, setAreaName] = useState("");
   const { venueId } = useVenueContext();
-
-  const queryClient = useQueryClient();
+  const { mutate: createArea } = useCreateArea(venueId);
   const nav = useNavigate();
-  const mutation = useMutation("areas", createArea, {
-    onSuccess: () => {
-      setAreaName("");
-      queryClient.invalidateQueries("areas");
-    },
-  });
+
+  const [areaName, setAreaName] = useState("");
 
   const onChange: React.ChangeEventHandler<HTMLInputElement> = event => {
     const { value } = event.target;
     setAreaName(value);
   };
   const onCreate = () => {
-    mutation.mutate({ venueId, areaName });
+    createArea({ venueId, areaName });
   };
 
   const onClose = () => {

@@ -3,7 +3,7 @@ import { MutateFunction, QueryKey, useMutation as useM, useQueryClient } from "r
 export const useMutation = <DataReturn, Variables>(
   key: QueryKey,
   mutateFn: MutateFunction<unknown, unknown, Variables>,
-  optimisticUpdater: (previous: DataReturn, vars: Variables) => DataReturn
+  optimisticUpdater?: (previous: DataReturn, vars: Variables) => DataReturn
 ) => {
   const client = useQueryClient();
   const { mutate } = useM(mutateFn, {
