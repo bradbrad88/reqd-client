@@ -1,7 +1,11 @@
 import { z } from "zod";
 import { detailFactory, listFactory } from "api/querieFactory";
 import type { ProductDetail } from "./useProducts";
-import { addProductToVenueArea, removeProductFromVenueArea } from "api/areas";
+import {
+  addProductToVenueAreaApi,
+  createAreaApi,
+  removeProductFromVenueAreaApi,
+} from "api/areas";
 import { keys } from "api/querieFactory";
 import { useMutation } from "./useMutation";
 
@@ -25,16 +29,20 @@ const schema = z.object({
   products: z.object({ id: z.string(), displayName: z.string() }).array(),
 });
 
+export const useCreateArea = (venueId: string) => {
+  const key = keys.all(venueId, "areas");
+  const { mutate } = useMutation(key, createAreaApi);
+  return { mutate };
+};
+
 export const useAddProductToArea = (venueId: string, areaId: string) => {
   const key = keys.detail(venueId, "areas", areaId);
   const { mutate } = useMutation(
     key,
-    addProductToVenueArea,
+    addProductToVenueAreaApi,
     (previous, vars): z.infer<typeof schema> => {
       const data = schema.optional().parse(previous);
-
       if (!data) throw new Error("Area no longer exists");
-
       return {
         ...data,
         products: data.products.concat({ id: vars.productId, displayName: "loading" }),
@@ -48,7 +56,7 @@ export const useRemoveProductFromArea = (venueId: string, areaId: string) => {
   const key = keys.detail(venueId, "areas", areaId);
   const { mutate } = useMutation(
     key,
-    removeProductFromVenueArea,
+    removeProductFromVenueAreaApi,
     (previous, vars): z.infer<typeof schema> => {
       const data = schema.parse(previous);
       if (!data) throw new Error("Can't remove product from an area that no longer exists");
