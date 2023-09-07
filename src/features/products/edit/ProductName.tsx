@@ -1,7 +1,7 @@
 import { Input } from "common/Inputs";
-import { useState } from "react";
-
+import { useCallback, useRef, useState } from "react";
 import { useVenueContext } from "src/hooks/useContexts";
+import useKeyboardSaveOrEscape from "src/hooks/useKeyboardSaveOrEscape";
 import { useUpdateProduct } from "src/hooks/useProducts";
 
 type Props = {
@@ -13,12 +13,20 @@ type Props = {
 const EditProductName = ({ productId, initialName, close }: Props) => {
   const { venueId } = useVenueContext();
   const { updateProduct } = useUpdateProduct(venueId, productId);
+  const ref = useRef<HTMLSpanElement>(null);
 
   const [displayName, setDisplayName] = useState(initialName);
 
-  const onSave = () => {
+  const onSave = useCallback(() => {
     updateProduct({ productId, update: { displayName }, venueId });
-    close();
+  }, [updateProduct, productId, displayName, venueId]);
+
+  useKeyboardSaveOrEscape(onSave, close);
+
+  const onBlur: React.FocusEventHandler<HTMLInputElement> = () => {
+    setTimeout(() => {
+      close();
+    }, 0);
   };
 
   return (
@@ -27,9 +35,9 @@ const EditProductName = ({ productId, initialName, close }: Props) => {
         autoFocus
         value={displayName}
         onChange={e => setDisplayName(e.target.value)}
-        onBlur={close}
+        onBlur={onBlur}
       />
-      <span onClick={onSave} className="absolute right-4 top-1/2 -translate-y-1/2">
+      <span ref={ref} onClick={onSave} className="absolute right-4 top-1/2 -translate-y-1/2">
         ✅
       </span>
     </div>
