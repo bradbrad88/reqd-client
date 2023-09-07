@@ -24,10 +24,18 @@ type CreateProduct = {
   size?: number;
 };
 
-const createProduct = async ({ displayName, venueId, vendorId }: CreateProduct) => {
+const createProduct = async ({
+  displayName,
+  venueId,
+  vendorId,
+  measure,
+  size,
+}: CreateProduct) => {
   return await axios.post<ProductDetail>(`/venue/${venueId}/products`, {
     displayName,
     vendorId,
+    measure,
+    size,
   });
 };
 

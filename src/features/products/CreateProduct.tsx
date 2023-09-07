@@ -16,7 +16,7 @@ const renderMeasureOptions = () => {
 const CreateProduct = () => {
   const nav = useNavigate();
   const { venueId } = useVenueContext();
-  const { createProduct } = useCreateProduct(venueId);
+  const { createProduct, status } = useCreateProduct(venueId);
   const { data: vendors } = useVendorList(venueId);
 
   const [displayName, setDisplayName] = useState("");
@@ -30,13 +30,24 @@ const CreateProduct = () => {
   };
 
   const onCreate = () => {
-    createProduct({
-      displayName,
-      vendorId,
-      venueId,
-      measure: measure || undefined,
-      size: size || undefined,
-    });
+    createProduct(
+      {
+        displayName,
+        vendorId,
+        venueId,
+        measure: measure || undefined,
+        size: size || undefined,
+      },
+      {
+        onSuccess: () => {
+          resetFields();
+        },
+      }
+    );
+  };
+
+  const resetFields = () => {
+    setDisplayName("");
   };
 
   const renderOptions = () => {
@@ -128,7 +139,7 @@ const CreateProduct = () => {
           </Select>
         </div>
 
-        <CallToAction disabled={verifyFields()} action={onCreate}>
+        <CallToAction disabled={verifyFields() || status === "loading"} action={onCreate}>
           Create
         </CallToAction>
       </Form>
