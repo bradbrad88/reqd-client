@@ -4,10 +4,10 @@ import { createProduct } from "../../api/products";
 import CallToAction from "../../common/CallToAction";
 import Form from "../../common/Form";
 import { useNavigate } from "react-router-dom";
-import { useVendorList } from "features/vendors/queries";
 import Field from "common/Field";
 import { Input, Select } from "common/Inputs";
 import { useVenueContext } from "src/hooks/useContexts";
+import { useVendorList } from "src/hooks/useVendors";
 const renderMeasureOptions = () => {
   const measures = ["mL", "g", "rolls"];
 
@@ -22,7 +22,7 @@ const CreateProduct = () => {
   const [vendorId, setVendorId] = useState("");
   const [measure, setMeasure] = useState("mL");
   const [size, setSize] = useState<number | null>(null);
-  const { vendors } = useVendorList(venueId);
+  const { data: vendors } = useVendorList(venueId);
 
   const mutation = useMutation("products", createProduct, {
     onSuccess: () => {

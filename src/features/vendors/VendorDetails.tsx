@@ -1,19 +1,17 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useDeleteVendor, useVendorDetail } from "./queries";
-import { useContext } from "react";
-import venueContext from "ctx/VenueContext";
 import { useVenueContext } from "src/hooks/useContexts";
+import { useDeleteVendor, useVendorDetail } from "src/hooks/useVendors";
 
 const VendorDetails = () => {
   const { venueId } = useVenueContext();
   const { vendorId } = useParams<{ vendorId: string }>();
-  const { vendor } = useVendorDetail(vendorId!);
+  const { data: vendor } = useVendorDetail(vendorId!, venueId);
 
-  const { mutate } = useDeleteVendor(venueId);
+  const { deleteVendor } = useDeleteVendor(venueId);
   const nav = useNavigate();
 
   const onDelete = () => {
-    mutate(
+    deleteVendor(
       { vendorId: vendorId!, venueId },
       {
         onSuccess: () => {

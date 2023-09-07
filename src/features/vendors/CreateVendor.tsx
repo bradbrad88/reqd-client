@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useVenueContext } from "src/hooks/useContexts";
-import { useCreateVendor } from "./queries";
+
 import CallToAction from "common/CallToAction";
 import Form from "common/Form";
 import Field from "common/Field";
 import { Input } from "common/Inputs";
+import { useCreateVendor } from "src/hooks/useVendors";
 
 const CreateVendor = () => {
   const { venueId } = useVenueContext();
   const nav = useNavigate();
-  const { mutate, status } = useCreateVendor();
+  const { createVendor, status } = useCreateVendor(venueId);
 
   const [vendorName, setVendorName] = useState("");
   const [repName, setRepName] = useState("");
@@ -24,7 +25,7 @@ const CreateVendor = () => {
     return false;
   };
   const onCreate = () => {
-    mutate(
+    createVendor(
       { venueId, vendorName },
       {
         onSuccess: () => {
