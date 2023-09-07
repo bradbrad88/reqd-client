@@ -1,18 +1,18 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useDeleteProduct, useProductDetail } from "./queries";
 import { useVenueContext } from "src/hooks/useContexts";
+import { useDeleteProduct, useProductDetail } from "src/hooks/useProducts";
 
 const ProductDetails = () => {
   const { venueId } = useVenueContext();
   const { productId } = useParams<{ productId: string }>();
-  const { product } = useProductDetail(venueId, productId!);
-  const { mutate } = useDeleteProduct(venueId, productId!);
+  const { data: product } = useProductDetail(productId!, venueId);
+  const { deleteProduct } = useDeleteProduct(venueId);
   const nav = useNavigate();
 
   if (!product) return <div>Product not found</div>;
 
   const onDelete = () => {
-    mutate(
+    deleteProduct(
       { productId: productId!, venueId },
       {
         onSuccess: () => {

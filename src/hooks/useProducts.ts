@@ -1,4 +1,6 @@
-import { detailFactory, listFactory } from "api/querieFactory";
+import { detailFactory, keys, listFactory } from "api/querieFactory";
+import { useMutation } from "./useMutation";
+import { createProductApi, deleteProductApi } from "api/products";
 
 type Product = {
   id: string;
@@ -17,5 +19,21 @@ export type ProductDetail = {
   measure: string;
 };
 
-export const useProductList = listFactory<ProductList, ProductFilters>("products");
-export const useProductDetail = detailFactory<ProductDetail>("products");
+const RESOURCE = "products" as const;
+
+export const useProductList = listFactory<ProductList, ProductFilters>(RESOURCE);
+export const useProductDetail = detailFactory<ProductDetail>(RESOURCE);
+
+export const useCreateProduct = (venueId: string) => {
+  const key = keys.all(venueId, RESOURCE);
+  const { mutate, status } = useMutation(key, createProductApi);
+
+  return { createProduct: mutate, status };
+};
+
+export const useDeleteProduct = (venueId: string) => {
+  const key = keys.all(venueId, RESOURCE);
+  const { mutate, status } = useMutation(key, deleteProductApi);
+
+  return { deleteProduct: mutate, status };
+};
