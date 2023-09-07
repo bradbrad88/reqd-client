@@ -49,5 +49,24 @@ const deleteProduct = async ({
   return await axios.delete(`/venue/${venueId}/products/${productId}`);
 };
 
+type UpdateFields = {
+  displayName?: string;
+  size?: number;
+  measure?: string;
+};
+
+const updateProduct = async ({
+  venueId,
+  productId,
+  update,
+}: {
+  venueId: string;
+  productId: string;
+  update: UpdateFields;
+}) => {
+  return await axios.put(`/venue/${venueId}/products/${productId}`, update);
+};
+
 export const createProductApi = axiosHandler(createProduct);
 export const deleteProductApi = axiosHandler(deleteProduct);
+export const updateProductApi = axiosHandler(updateProduct);
