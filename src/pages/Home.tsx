@@ -20,6 +20,11 @@ const Home = () => {
             <div className="">Vendors</div>
           </Link>
         </Wrapper>
+        <Wrapper>
+          <Link to={"orders"}>
+            <div className="">Orders</div>
+          </Link>
+        </Wrapper>
       </nav>
     </div>
   );

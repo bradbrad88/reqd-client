@@ -1,30 +1,57 @@
-import { useContext } from "react";
-import { OrderContext } from "../../contexts/orderContext";
+import { useMemo } from "react";
+import { useVenueContext } from "src/hooks/useContexts";
+import { OrderDetail, useSetProductAmount } from "src/hooks/useOrders";
 
 type Props = {
-  itemId: string;
-  area: string;
+  orderId: string;
+  productId: string;
+  displayName: string;
+  size: number;
+  measure: string;
+  areaId: string;
+  productAmounts?: OrderDetail["items"][number]["areaAmounts"];
 };
 
-const ItemForm = ({ itemId, area }: Props) => {
-  const { setItemValue, getItemValue, getItemAreaValue } = useContext(OrderContext);
+const ItemForm = ({
+  orderId,
+  productId,
+  areaId,
+  displayName,
+  size,
+  measure,
+  productAmounts = [],
+}: Props) => {
+  const { venueId } = useVenueContext();
+  // TODO: Bring in increment amount - should be part of Product object
   const incrementAmount = 6;
+
+  const { mutate } = useSetProductAmount(venueId, orderId);
   const units = "cases";
 
+  const areaAmount = useMemo(() => {
+    const productAmount = productAmounts.find(
+      productAmount => productAmount.areaId === areaId
+    );
+    return productAmount?.amount || 0;
+  }, [productAmounts, areaId]);
+
   const onIncrease = () => {
-    const amount = getItemAreaValue(itemId, area) + incrementAmount;
-    setItemValue(itemId, area, amount);
+    const amount = areaAmount + incrementAmount;
+    mutate({ venueId, orderId, data: { productId, areaId, amount } });
   };
 
   const onDecrease = () => {
-    const amount = Math.max(getItemAreaValue(itemId, area) - incrementAmount, 0);
-    setItemValue(itemId, area, amount);
+    const newAmount = areaAmount - incrementAmount;
+    const amount = newAmount < 0 ? 0 : newAmount;
+    mutate({ venueId, orderId, data: { productId, areaId, amount } });
   };
 
   return (
     <div>
-      Item:{itemId} <br />
-      Order: {getItemValue(itemId)} {units}
+      {displayName} {size}
+      {measure} <br />
+      Test: {areaAmount} <br />
+      Order: {areaAmount} {units}
       <div className="flex flex-row justify-between">
         <button className="p-1 px-5 h-full" onClick={onDecrease}>
           Decrease
@@ -33,48 +60,46 @@ const ItemForm = ({ itemId, area }: Props) => {
           Increase
         </button>
       </div>
-      <ItemValuesBreakdown itemId={itemId} area={area} />
     </div>
   );
 };
 
 export default ItemForm;
 
-type BreakdownProps = {
-  itemId: string;
-  area: string;
-};
+// type BreakdownProps = {
+//   productId: string;
+//   area: string;
+// };
 
-function ItemValuesBreakdown({ itemId, area }: BreakdownProps) {
-  const { items } = useContext(OrderContext);
+// function ItemValuesBreakdown({ productId, area }: BreakdownProps) {
+//   const renderBreakdown = () => {
+//     return null;
+//     // const item = items.find(item => item.productId === productId);
+//     // if (!item || item.areas.length < 2) return null;
 
-  const renderBreakdown = () => {
-    const item = items.find(item => item.itemId === itemId);
-    if (!item || item.areas.length < 2) return null;
+//     // const areas = item.areas;
 
-    const areas = item.areas;
+//     // areas.sort(a => {
+//     //   if (a.area === area) return -1;
+//     //   return 0;
+//     // });
+//     // return areas.map(area => (
+//     //   <BreakdownItem area={area.area} amount={area.amount} key={area.area} />
+//     // ));
+//   };
 
-    areas.sort(a => {
-      if (a.area === area) return -1;
-      return 0;
-    });
-    return areas.map(area => (
-      <BreakdownItem area={area.area} amount={area.amount} key={area.area} />
-    ));
-  };
+//   return <div>{renderBreakdown()}</div>;
+// }
 
-  return <div>{renderBreakdown()}</div>;
-}
+// type BreakdownItemProps = {
+//   area: string;
+//   amount: number;
+// };
 
-type BreakdownItemProps = {
-  area: string;
-  amount: number;
-};
-
-function BreakdownItem({ area, amount }: BreakdownItemProps) {
-  return (
-    <div>
-      {area}:{amount}
-    </div>
-  );
-}
+// function BreakdownItem({ area, amount }: BreakdownItemProps) {
+//   return (
+//     <div>
+//       {area}:{amount}
+//     </div>
+//   );
+// }

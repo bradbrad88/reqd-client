@@ -16,6 +16,9 @@ import AreaList from "features/areas/AreaList";
 import AreaDetails from "features/areas/AreaDetails";
 import AddProductToArea from "features/areas/AddProductToArea";
 import AreaProducts from "features/areas/AreaProducts";
+import Orders from "./pages/Orders";
+import OrderList from "features/orderForm/OrderList";
+import OrderDetail from "features/orderForm/OrderDetails";
 
 const queryClient = new QueryClient();
 
@@ -49,7 +52,10 @@ function App() {
                 <Route path="add-product" element={<AddProductToArea />} />
               </Route>
             </Route>
-            <Route path="areas" element={<Areas />}></Route>
+            <Route path="orders" element={<Orders />}>
+              <Route path="" element={<OrderList />} />
+              <Route path=":orderId" element={<OrderDetail />} />
+            </Route>
           </Routes>
         </Router>
       </VenueProvider>
