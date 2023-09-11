@@ -1,13 +1,12 @@
 import { z } from "zod";
-import { detailFactory, listFactory } from "api/querieFactory";
-import type { ProductDetail } from "./useProducts";
+import { detailFactory, listFactory, keys } from "api/querieFactory";
+import { useMutation } from "./useMutation";
 import {
   addProductToVenueAreaApi,
   createAreaApi,
   removeProductFromVenueAreaApi,
 } from "api/areas";
-import { keys } from "api/querieFactory";
-import { useMutation } from "./useMutation";
+import type { ProductDetail } from "./useProducts";
 
 type AreaList = {
   id: string;
