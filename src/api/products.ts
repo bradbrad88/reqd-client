@@ -16,30 +16,41 @@ export type ProductList = {
   displayName: string;
   vendorId: string;
   vendorName: string;
-  size: number;
+  unitType: string;
   packageType: string;
-  measure: string;
+  packageQuantity: number;
+  size: number;
+  unitOfMeasurement: string;
 }[];
 
 type CreateProduct = {
-  displayName: string;
   venueId: string;
   vendorId: string;
-  measure?: string;
+  displayName: string;
+  unitType: string;
+  packageType: string;
+  packageQuantity: number;
   size?: number;
+  unitOfMeasurement?: string;
 };
 
 const createProduct = async ({
-  displayName,
   venueId,
   vendorId,
-  measure,
+  displayName,
+  unitType,
+  packageType,
+  packageQuantity,
   size,
+  unitOfMeasurement,
 }: CreateProduct) => {
   return await axios.post<ProductDetail>(`/venue/${venueId}/products`, {
-    displayName,
     vendorId,
-    measure,
+    displayName,
+    unitType,
+    packageType,
+    packageQuantity,
+    unitOfMeasurement,
     size,
   });
 };
@@ -56,8 +67,11 @@ const deleteProduct = async ({
 
 type UpdateFields = {
   displayName?: string;
-  size?: number;
-  measure?: string;
+  unitType?: string;
+  packageType?: string;
+  packageQuantity?: number;
+  size?: number | null;
+  unitOfMeasurement?: string | null;
 };
 
 const updateProduct = async ({

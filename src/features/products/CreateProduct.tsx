@@ -6,12 +6,12 @@ import { useVenueContext } from "src/hooks/useContexts";
 import CallToAction from "../../common/CallToAction";
 import Form from "../../common/Form";
 import Field from "common/Field";
-import { Input, Select } from "common/Inputs";
-const renderMeasureOptions = () => {
-  const measures = ["mL", "g", "rolls"];
-
-  return measures.map(measure => <Option key={measure} display={measure} id={measure} />);
-};
+import { Combo, Input } from "common/Inputs";
+import {
+  usePackaageTypeList,
+  useUnitOfMeasurementsList,
+  useUnitTypeList,
+} from "src/hooks/useScalars";
 
 const CreateProduct = () => {
   const nav = useNavigate();
@@ -19,10 +19,17 @@ const CreateProduct = () => {
   const { createProduct, status } = useCreateProduct(venueId);
   const { data: vendors } = useVendorList(venueId);
 
-  const [displayName, setDisplayName] = useState("");
   const [vendorId, setVendorId] = useState("");
-  const [measure, setMeasure] = useState("mL");
+  const [displayName, setDisplayName] = useState("");
+  const [unitType, setUnitType] = useState("");
+  const [packageType, setPackageType] = useState("");
+  const [packageQuantity, setPackageQuantity] = useState<number | null>(null);
   const [size, setSize] = useState<number | null>(null);
+  const [unitOfMeasurement, setUnitOfMeasurement] = useState("mL");
+
+  const { data: unitTypes } = useUnitTypeList(venueId);
+  const { data: packageTypes } = usePackaageTypeList(venueId);
+  const { data: unitOfMeasurements } = useUnitOfMeasurementsList(venueId);
 
   const onChange: React.ChangeEventHandler<HTMLInputElement> = event => {
     const { value } = event.target;
@@ -30,12 +37,17 @@ const CreateProduct = () => {
   };
 
   const onCreate = () => {
+    if (!verifyFields()) return;
+    console.log("Creating");
     createProduct(
       {
         displayName,
         vendorId,
         venueId,
-        measure: measure || undefined,
+        unitType,
+        packageType,
+        packageQuantity: packageQuantity!,
+        unitOfMeasurement: unitOfMeasurement || undefined,
         size: size || undefined,
       },
       {
@@ -57,8 +69,36 @@ const CreateProduct = () => {
     ));
   };
 
+  const unitTypeOptions = unitTypes.map(unit => ({
+    display: unit.unitType,
+    value: unit.unitType,
+  }));
+  const packageTypeOptions = packageTypes.map(unit => ({
+    display: unit.packageType,
+    value: unit.packageType,
+  }));
+  const unitOfMeasurementsOptions = unitOfMeasurements.map(unit => ({
+    display: unit.unitOfMeasurement,
+    value: unit.unitOfMeasurement,
+  }));
+
   const onVendorChange: React.ChangeEventHandler<HTMLSelectElement> = event => {
     setVendorId(event.target.value);
+  };
+
+  const onUnitTypeChange = (value: string | null) => {
+    if (!value) return setUnitType("");
+    setUnitType(value);
+  };
+
+  const onPackageTypeChange = (value: string | null) => {
+    setPackageType(value || "");
+  };
+
+  const onPackageQuantityChange: React.ChangeEventHandler<HTMLInputElement> = event => {
+    const num = Number(event.target.value);
+    if (isNaN(num)) return;
+    setPackageQuantity(num);
   };
 
   const onSizeChange: React.ChangeEventHandler<HTMLInputElement> = event => {
@@ -67,13 +107,44 @@ const CreateProduct = () => {
     setSize(newSize);
   };
 
-  const onMeasureChange: React.ChangeEventHandler<HTMLSelectElement> = event => {
-    setMeasure(event.target.value);
+  const onUnitOfMeasurementChange = (value: string | null) => {
+    setUnitOfMeasurement(value || "");
   };
 
   const verifyFields = () => {
-    return !(displayName && vendorId);
+    return [
+      validateDisplayName(displayName),
+      validateUnitType(unitType),
+      validatePackageType(packageType),
+      validatePackageQuantity(packageQuantity),
+    ].every(res => res);
   };
+
+  function validateDisplayName(name: string | null) {
+    if (name == null) return false;
+    if (name.length < 2) return false;
+    return true;
+  }
+
+  function validateUnitType(unitType: string | null) {
+    if (unitType == null) return false;
+    if (unitType.length < 1) return false;
+    return true;
+  }
+
+  function validatePackageType(packageType: string | null) {
+    if (packageType == null) return false;
+    if (packageType.length < 1) return false;
+    return true;
+  }
+
+  function validatePackageQuantity(qty: number | null) {
+    if (qty == null) return false;
+    if (isNaN(qty)) return false;
+    if (qty < 1) return false;
+
+    return true;
+  }
 
   const onClose = () => {
     nav("../", { relative: "path" });
@@ -95,7 +166,6 @@ const CreateProduct = () => {
       <Form>
         <Field>
           <label htmlFor="displayName">Product Name</label>
-
           <Input
             type="text"
             id="displayName"
@@ -103,6 +173,7 @@ const CreateProduct = () => {
             className="p-2 px-4 rounded-full"
             onChange={onChange}
             value={displayName}
+            autoFocus
           />
         </Field>
         <Field>
@@ -117,29 +188,53 @@ const CreateProduct = () => {
             {renderOptions()}
           </select>
         </Field>
-        <div className="flex flex-col">
+        <Field>
+          <label htmlFor="unitType">Unit Type</label>
+          <Combo
+            id="unitType"
+            selectedOption={unitType}
+            setSelectedOption={onUnitTypeChange}
+            options={unitTypeOptions}
+          />
+        </Field>
+        <Field>
+          <label htmlFor="packageType">Package Type</label>
+          <Combo
+            id="packageType"
+            selectedOption={packageType}
+            setSelectedOption={onPackageTypeChange}
+            options={packageTypeOptions}
+          />
+        </Field>
+        <Field>
+          <label htmlFor="packageQuantity">Package Quantity</label>
+          <Input
+            id="packageQuantity"
+            onChange={onPackageQuantityChange}
+            value={packageQuantity || ""}
+            type="number"
+          />
+        </Field>
+        <Field>
           <label htmlFor="size">Size</label>
-          <input
+          <Input
             id="size"
             onChange={onSizeChange}
             value={size || ""}
-            placeholder="...Size"
-            className="p-2 px-4 pr-8 rounded-full "
+            placeholder="size..."
+            type="number"
+          />
+        </Field>
+        <div className="flex flex-col">
+          <label htmlFor="measure">Unit of measurement</label>
+          <Combo
+            id="unitOfMeasurement"
+            setSelectedOption={onUnitOfMeasurementChange}
+            selectedOption={unitOfMeasurement}
+            options={unitOfMeasurementsOptions}
           />
         </div>
-        <div className="flex flex-col">
-          <label htmlFor="measure">Vendor</label>
-          <Select
-            id="measure"
-            onChange={onMeasureChange}
-            value={measure}
-            className="p-2 px-4 pr-8 rounded-full "
-          >
-            {renderMeasureOptions()}
-          </Select>
-        </div>
-
-        <CallToAction disabled={verifyFields() || status === "loading"} action={onCreate}>
+        <CallToAction disabled={!verifyFields() || status === "loading"} action={onCreate}>
           Create
         </CallToAction>
       </Form>

@@ -10,9 +10,14 @@ type ProductFilters = {
 };
 export type ProductDetail = {
   id: string;
+  vendorId: string;
+  vendorName: string;
   displayName: string;
-  size: number;
-  measure: string;
+  unitType: string;
+  packageType: string;
+  packageQuantity: number;
+  size: number | null;
+  unitOfMeasurement: string | null;
 };
 
 const RESOURCE = "products" as const;
@@ -37,26 +42,33 @@ export const useDeleteProduct = (venueId: string) => {
 const ProductsSchema = z.object({
   id: z.string(),
   displayName: z.string(),
+  unitType: z.string(),
+  packageType: z.string(),
+  packageQuantity: z.number(),
   size: z.number().nullish(),
-  measure: z.string().nullish(),
+  unitOfMeasurement: z.string().nullish(),
 });
 
 export const useUpdateProduct = (venueId: string, productId: string) => {
   const key = keys.detail(venueId, RESOURCE, productId);
-  const { mutate } = useMutation(key, updateProductApi, (previous, vars) => {
-    // Optimistic Update
-    const data = ProductsSchema.parse(previous);
-    let update = { ...data };
-    // The update fields don't all have to be provided, so don't optimistically update all of them
-    const keys = Object.keys(data) as (keyof typeof data)[];
-    keys.forEach(key => {
-      if (key === "id") return;
-      const value = vars.update[key];
-      if (value != null) update = { ...update, [key]: value };
-    });
+  const { mutate } = useMutation(
+    key,
+    updateProductApi
+    //   (previous, vars) => {
+    //   // Optimistic Update
+    //   const data = ProductsSchema.parse(previous);
+    //   let update = { ...data };
+    //   // The update fields don't all have to be provided, so don't optimistically update all of them
+    //   const keys = Object.keys(data) as (keyof typeof data)[];
+    //   keys.forEach(key => {
+    //     if (key === "id") return;
+    //     const value = vars.update[key];
+    //     if (value != null) update = { ...update, [key]: value };
+    //   });
 
-    return { ...update };
-  });
+    //   return { ...update };
+    // }
+  );
 
   return { updateProduct: mutate };
 };

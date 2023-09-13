@@ -53,9 +53,7 @@ function ProductCombo({ productId, setProductId, products }: ProductProps) {
     return products.map(product => ({
       value: product.id,
       display: product.displayName,
-      subDisplay: product.packageType
-        ? product.packageType + " " + product.size + product.measure
-        : "",
+      subDisplay: `${product.unitType} ${product.size}${product.unitOfMeasurement}`,
     }));
   };
 

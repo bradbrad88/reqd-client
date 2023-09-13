@@ -5,6 +5,8 @@ import { useDeleteProduct, useProductDetail } from "src/hooks/useProducts";
 import EditIcon from "src/common/icons/Edit";
 import EditProductName from "./edit/ProductName";
 import EditProductSize from "./edit/ProductSize";
+import EditProductPackageType from "./edit/ProductPackageType";
+import EditUnitType from "./edit/ProductUnitType";
 
 const ProductDetails = () => {
   const { venueId } = useVenueContext();
@@ -13,7 +15,12 @@ const ProductDetails = () => {
   const { deleteProduct } = useDeleteProduct(venueId);
 
   const [editName, setEditName] = useState(false);
+  const [editUnitType, setEditUnitType] = useState(false);
+  const [editPackageType, setEditPackageType] = useState(false);
+  const [editPackageQuantity, setEditPackageQuantity] = useState(false);
   const [editSize, setEditSize] = useState(false);
+  const [editUnitOfMeasurement, setEditUnitOfMeasurement] = useState(false);
+
   const nav = useNavigate();
 
   if (!product) return <div>Product not found</div>;
@@ -32,7 +39,7 @@ const ProductDetails = () => {
   return (
     <div className="flex flex-col gap-3">
       <h2 className="font-bold text-2xl">Edit Product</h2>
-      <div className="grid grid-cols-[min-content,_auto] gap-3 items-center">
+      <div className="">
         <label className="w-full">Product</label>
         {editName ? (
           <EditProductName
@@ -68,6 +75,25 @@ const ProductDetails = () => {
               <EditIcon />
             </span>
             {product.size}
+          </div>
+        )}
+        <label>Package Type</label>
+        <EditUnitType productId={productId!} unitType={product.unitType} />
+        {editPackageType ? (
+          <EditProductPackageType
+            productId={product.id}
+            initialPackageType={product.packageType}
+            close={() => setEditPackageType(false)}
+          />
+        ) : (
+          <div
+            onClick={() => setEditPackageType(true)}
+            className="flex gap-2 text-indigo-100 bg-zinc-700 rounded-lg p-2 px-3"
+          >
+            <span>
+              <EditIcon />
+            </span>
+            {product.packageType}
           </div>
         )}
 
