@@ -12,7 +12,7 @@ const AreaDetails = () => {
 
   return (
     <div>
-      <h2>{data.areaName}</h2>
+      <h2 className="text-2xl font-bold">{data.areaName}</h2>
       <Outlet context={{ areaProducts: data.products }} />
     </div>
   );

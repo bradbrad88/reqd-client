@@ -6,17 +6,28 @@ import {
   createAreaApi,
   removeProductFromVenueAreaApi,
 } from "api/areas";
-import type { ProductDetail } from "./useProducts";
 
 type AreaList = {
   id: string;
   areaName: string;
 }[];
 type AreaFilters = undefined;
+export type ProductLocation = {
+  id: string;
+  productId: string;
+  parLevel: number;
+  sortedOrder: number;
+  displayName: string;
+  size: number;
+  measure: string;
+  package: string;
+  packageType: string;
+  orderUnits: string;
+};
 type AreaDetail = {
   id: string;
   areaName: string;
-  products: ProductDetail[];
+  products: ProductLocation[];
 };
 
 export const useAreaList = listFactory<AreaList, AreaFilters>("areas");
@@ -25,7 +36,9 @@ export const useAreaDetail = detailFactory<AreaDetail>("areas");
 const schema = z.object({
   id: z.string(),
   areaName: z.string(),
-  products: z.object({ id: z.string(), displayName: z.string() }).array(),
+  products: z
+    .object({ id: z.string(), productId: z.string(), displayName: z.string() })
+    .array(),
 });
 
 export const useCreateArea = (venueId: string) => {
@@ -36,18 +49,7 @@ export const useCreateArea = (venueId: string) => {
 
 export const useAddProductToArea = (venueId: string, areaId: string) => {
   const key = keys.detail(venueId, "areas", areaId);
-  const { mutate } = useMutation(
-    key,
-    addProductToVenueAreaApi,
-    (previous, vars): z.infer<typeof schema> => {
-      const data = schema.optional().parse(previous);
-      if (!data) throw new Error("Area no longer exists");
-      return {
-        ...data,
-        products: data.products.concat({ id: vars.productId, displayName: "loading" }),
-      };
-    }
-  );
+  const { mutate } = useMutation(key, addProductToVenueAreaApi);
   return { mutate };
 };
 
@@ -61,7 +63,7 @@ export const useRemoveProductFromArea = (venueId: string, areaId: string) => {
       if (!data) throw new Error("Can't remove product from an area that no longer exists");
       return {
         ...data,
-        products: data.products.filter(product => product.id !== vars.productId),
+        products: data.products.filter(product => product.id !== vars.productLocation),
       };
     }
   );

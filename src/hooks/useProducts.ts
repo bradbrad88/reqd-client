@@ -2,13 +2,8 @@ import { detailFactory, keys, listFactory } from "api/querieFactory";
 import { useMutation } from "./useMutation";
 import { createProductApi, deleteProductApi, updateProductApi } from "api/products";
 import { z } from "zod";
+import type { ProductList } from "api/products";
 
-type Product = {
-  id: string;
-  displayName: string;
-};
-
-type ProductList = Product[];
 type ProductFilters = {
   vendorId: string | string[] | undefined;
   areaId: string | string[] | undefined;

@@ -14,6 +14,11 @@ export type ProductDetail = {
 export type ProductList = {
   id: string;
   displayName: string;
+  vendorId: string;
+  vendorName: string;
+  size: number;
+  packageType: string;
+  measure: string;
 }[];
 
 type CreateProduct = {

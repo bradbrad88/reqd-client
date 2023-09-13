@@ -23,9 +23,11 @@ const Area = ({ id, areaName, orderId, orderItems }: Props) => {
           key={product.id}
           areaId={id}
           orderId={orderId}
-          productId={product.id}
+          productId={product.productId}
           productAmounts={productAmounts?.areaAmounts}
-          {...product}
+          displayName={product.displayName}
+          measure={product.measure}
+          size={product.size}
         />
       );
     });

@@ -30,16 +30,14 @@ const addProductToVenueArea = async ({
 
 const removeProductFromVenueArea = async ({
   areaId,
-  productId,
+  productLocation,
   venueId,
 }: {
   venueId: string;
   areaId: string;
-  productId: string;
+  productLocation: string;
 }) => {
-  return await axios.delete(`venue/${venueId}/areas/${areaId}/products`, {
-    data: { productId },
-  });
+  return await axios.delete(`venue/${venueId}/areas/${areaId}/products/${productLocation}`);
 };
 
 export const createAreaApi = axiosHandler(createArea);
