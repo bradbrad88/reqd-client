@@ -1,9 +1,8 @@
 import { Input } from "common/Inputs";
 import { useCallback, useRef, useState } from "react";
-
 import { useVenueContext } from "src/hooks/useContexts";
-import useKeyboardSaveOrEscape from "src/hooks/useKeyboardSaveOrEscape";
 import { useUpdateProduct } from "src/hooks/useProducts";
+import useKeyboardSaveOrEscape from "src/hooks/useKeyboardSaveOrEscape";
 
 type Props = {
   productId: string;
@@ -14,15 +13,12 @@ type Props = {
 const EditProductSize = ({ productId, initialSize, close }: Props) => {
   const { venueId } = useVenueContext();
   const { updateProduct } = useUpdateProduct(venueId, productId);
-  const ref = useRef<HTMLDivElement>(null);
 
   const [size, setSize] = useState(initialSize || undefined);
 
   const onSave = useCallback(() => {
     updateProduct({ productId, venueId, update: { size } });
   }, [updateProduct, productId, venueId, size]);
-
-  useKeyboardSaveOrEscape(onSave, close);
 
   const onBlur = () => {
     setTimeout(() => {
@@ -31,8 +27,10 @@ const EditProductSize = ({ productId, initialSize, close }: Props) => {
   };
 
   return (
-    <div ref={ref} className="relative">
+    <div className="relative">
       <Input
+        onSave={onSave}
+        close={close}
         autoFocus
         type="number"
         value={size}

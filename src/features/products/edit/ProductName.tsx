@@ -1,7 +1,6 @@
 import { Input } from "common/Inputs";
 import { useCallback, useRef, useState } from "react";
 import { useVenueContext } from "src/hooks/useContexts";
-import useKeyboardSaveOrEscape from "src/hooks/useKeyboardSaveOrEscape";
 import { useUpdateProduct } from "src/hooks/useProducts";
 
 type Props = {
@@ -21,8 +20,6 @@ const EditProductName = ({ productId, initialName, close }: Props) => {
     updateProduct({ productId, update: { displayName }, venueId });
   }, [updateProduct, productId, displayName, venueId]);
 
-  useKeyboardSaveOrEscape(onSave, close);
-
   const onBlur: React.FocusEventHandler<HTMLInputElement> = () => {
     setTimeout(() => {
       close();
@@ -32,6 +29,8 @@ const EditProductName = ({ productId, initialName, close }: Props) => {
   return (
     <div className="relative">
       <Input
+        onSave={onSave}
+        close={close}
         autoFocus
         value={displayName}
         onChange={e => setDisplayName(e.target.value)}

@@ -1,12 +1,20 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import useKeyboardSaveOrEscape from "src/hooks/useKeyboardSaveOrEscape";
 import useShortcuts from "src/hooks/useShortcuts";
 
-type InputProp = React.InputHTMLAttributes<HTMLInputElement> &
+type InputProp = {
+  onSave?: () => void;
+  close?: () => void;
+} & React.InputHTMLAttributes<HTMLInputElement> &
   React.RefAttributes<HTMLInputElement>;
 
 const commonClasses = "p-2 px-4 rounded-full focus-visible:outline-lime-400";
 
-export const Input = (htmlInputProps: InputProp) => {
+export const Input = ({
+  onSave = () => {},
+  close = () => {},
+  ...htmlInputProps
+}: InputProp) => {
   const ref = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -15,6 +23,8 @@ export const Input = (htmlInputProps: InputProp) => {
     ref.current.selectionStart = 0;
     ref.current.selectionEnd = ref.current.value.length;
   }, []);
+
+  useKeyboardSaveOrEscape(onSave, close, ref);
 
   return (
     <input
@@ -46,25 +56,44 @@ export const Checkbox = (props: CheckboxProps) => {
 type ComboProps = {
   setSelectedOption: (value: string | null) => void;
   selectedOption: string | null;
-  label: string;
+  label?: string;
   options: {
     display: string;
     value: string;
   }[];
-};
+} & React.InputHTMLAttributes<HTMLInputElement>;
 
-export const Combo = ({ selectedOption, setSelectedOption, options, label }: ComboProps) => {
-  const [focused, setFocused] = useState(true);
+export const Combo = ({
+  selectedOption,
+  setSelectedOption,
+  options,
+  label,
+  ...inputProps
+}: ComboProps) => {
+  const [focused, setFocused] = useState(false);
+  const [markForClose, setMarkForClose] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
   const [activeOption, setActiveOption] = useState<string | null>(null);
+  const selectedValue = options.find(option => option.value === selectedOption)?.value;
   const [query, setQuery] = useState("");
 
-  const filteredOptions = options.filter(option =>
-    option.display.toLowerCase().includes(query.toLowerCase())
+  const filteredOptions = sortFilterOptionsCurrentSelectionAtTop(
+    options.filter(option => option.display.toLowerCase().includes(query.toLowerCase())),
+    selectedValue
+  );
+
+  const setSelected = useCallback(
+    (value: string) => {
+      setSelectedOption(value);
+      setMarkForClose(true);
+      setQuery("");
+    },
+    [setSelectedOption, setMarkForClose, setQuery]
   );
 
   const onDownKey = useCallback(() => {
     if (filteredOptions.length < 1) return;
+    setMarkForClose(false);
     if (!activeOption) {
       const option = filteredOptions[0];
       if (!option) return setActiveOption(null);
@@ -78,6 +107,7 @@ export const Combo = ({ selectedOption, setSelectedOption, options, label }: Com
 
   const onUpKey = useCallback(() => {
     if (filteredOptions.length < 1) return;
+    setMarkForClose(false);
     if (!activeOption) {
       const option = filteredOptions[filteredOptions.length - 1];
       return setActiveOption(option.value);
@@ -88,16 +118,25 @@ export const Combo = ({ selectedOption, setSelectedOption, options, label }: Com
     setActiveOption(filteredOptions[cyclicIndex].value);
   }, [activeOption, setActiveOption, filteredOptions]);
 
+  const onBackspaceKey = useCallback(() => {
+    if (!focused) {
+      setMarkForClose(false);
+      setFocused(true);
+    }
+  }, [setMarkForClose, setFocused, focused]);
+
   const onEnterKey = useCallback(() => {
     if (activeOption) {
-      setSelectedOption(activeOption);
-      setTimeout(() => {
-        ref.current?.blur();
-      }, 100);
+      setSelected(activeOption);
     } else {
       ref.current?.focus();
     }
-  }, [activeOption, setSelectedOption]);
+  }, [activeOption, setSelected]);
+
+  useShortcuts("ArrowDown", onDownKey, ref);
+  useShortcuts("ArrowUp", onUpKey, ref);
+  useShortcuts("Enter", onEnterKey, ref);
+  useShortcuts("Backspace", onBackspaceKey, ref);
 
   useEffect(() => {
     if (!focused) {
@@ -105,27 +144,17 @@ export const Combo = ({ selectedOption, setSelectedOption, options, label }: Com
     }
   }, [focused, setActiveOption]);
 
-  useShortcuts("ArrowDown", onDownKey);
-  useShortcuts("ArrowUp", onUpKey);
-  useShortcuts("Enter", onEnterKey);
+  useEffect(() => {
+    if (markForClose) {
+      setFocused(false);
+    }
+  }, [markForClose, setFocused]);
 
   const setActive = (value: string) => {
     setActiveOption(value);
   };
 
-  const setSelected = (value: string) => {
-    setSelectedOption(value);
-    setQuery("");
-  };
-
   const renderOptions = () => {
-    let filteredOptions = options;
-    if (query.length > 0) {
-      filteredOptions = options.filter(option =>
-        option.display.toLowerCase().includes(query.toLowerCase())
-      );
-    }
-
     return filteredOptions.map(option => (
       <ComboOption
         key={option.value}
@@ -151,10 +180,22 @@ export const Combo = ({ selectedOption, setSelectedOption, options, label }: Com
     }
   };
 
-  const onBlur = () => {
-    setTimeout(() => {
-      setFocused(false);
-    }, 200);
+  const onBlur: React.FocusEventHandler<HTMLInputElement> = e => {
+    setMarkForClose(true);
+    if (inputProps.onBlur) {
+      inputProps.onBlur(e);
+    }
+  };
+
+  const onFocus: React.FocusEventHandler = () => {
+    setMarkForClose(false);
+    setFocused(true);
+    // if (selectedValue) setQuery(selectedValue);
+  };
+
+  const onClick: React.PointerEventHandler<HTMLInputElement> = () => {
+    setMarkForClose(false);
+    setFocused(true);
   };
 
   const displaySelected = selectedOption
@@ -163,27 +204,48 @@ export const Combo = ({ selectedOption, setSelectedOption, options, label }: Com
 
   return (
     <div className="relative pb-2">
-      <label htmlFor={"combo"}>{label}</label>
+      {label && <label htmlFor={"combo"}>{label}</label>}
       <input
         id="combo"
         ref={ref}
-        value={focused ? query : displaySelected}
+        value={focused ? query : displaySelected ? "✅ " + displaySelected : ""}
         onChange={onChange}
         onKeyDown={onKeyDown}
-        onBlur={onBlur}
-        onFocus={() => setFocused(true)}
-        autoFocus
+        onFocus={onFocus}
+        onClick={onClick}
         className={commonClasses + " w-full"}
         type="text"
+        {...inputProps}
+        onBlur={onBlur}
       />
       {focused && filteredOptions.length > 0 && (
-        <div className="absolute bg-zinc-900 w-full top-full rounded-md border-lime-400 border-[1px] flex flex-col max-h-48 overflow-auto">
+        <div className="absolute bg-zinc-900 w-full top-full rounded-md border-lime-400 border-[1px] flex flex-col max-h-48 overflow-auto z-50">
           {renderOptions()}
         </div>
       )}
     </div>
   );
 };
+
+type FilterOptions = {
+  value: string;
+  display: string;
+}[];
+
+function sortFilterOptionsCurrentSelectionAtTop(
+  filterOptions: FilterOptions,
+  selectedOption: string | null | undefined
+): FilterOptions {
+  const newOptions = [...filterOptions];
+  if (selectedOption == null) return newOptions;
+  if (newOptions.length < 2) return newOptions;
+  const idx = newOptions.findIndex(option => option.value === selectedOption);
+  if (idx === -1) return newOptions;
+  const temp = newOptions[0];
+  newOptions[0] = newOptions[idx];
+  newOptions[idx] = temp;
+  return newOptions;
+}
 
 function ComboOption({
   value,

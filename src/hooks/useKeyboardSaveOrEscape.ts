@@ -1,7 +1,11 @@
-import { useCallback } from "react";
+import { RefObject, useCallback } from "react";
 import useShortcuts from "./useShortcuts";
 
-const useKeyboardSaveOrEscape = (onSave: () => void, close: () => void) => {
+const useKeyboardSaveOrEscape = (
+  onSave: () => void,
+  close: () => void,
+  ref: RefObject<HTMLDivElement>
+) => {
   const onEnter = useCallback(() => {
     onSave();
     close();
@@ -10,8 +14,8 @@ const useKeyboardSaveOrEscape = (onSave: () => void, close: () => void) => {
   const onEscape = useCallback(() => {
     close();
   }, [close]);
-  useShortcuts("Enter", onEnter);
-  useShortcuts("Escape", onEscape);
+  useShortcuts("Enter", onEnter, ref);
+  useShortcuts("Escape", onEscape, ref);
 };
 
 export default useKeyboardSaveOrEscape;

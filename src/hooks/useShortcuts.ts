@@ -1,12 +1,12 @@
-import { useCallback, useEffect } from "react";
+import { RefObject, useCallback, useEffect } from "react";
 
-const useShortcuts = (key: string, cb: () => void) => {
+const useShortcuts = (key: string, cb: () => void, ref: RefObject<HTMLElement>) => {
   const onKeydown = useCallback(
     (event: KeyboardEvent) => {
       if (event.key !== key) return;
-      cb();
+      if (ref.current?.contains(event.target as Node)) cb();
     },
-    [key, cb]
+    [key, cb, ref]
   );
 
   useEffect(() => {
