@@ -12,6 +12,7 @@ import {
   useUnitOfMeasurementsList,
   useUnitTypeList,
 } from "src/hooks/useScalars";
+import DescribeProduct from "./edit/DescribeProduct";
 
 const CreateProduct = () => {
   const nav = useNavigate();
@@ -62,12 +63,10 @@ const CreateProduct = () => {
     setDisplayName("");
   };
 
-  const renderOptions = () => {
-    if (!vendors) return null;
-    return vendors.map(vendor => (
-      <Option key={vendor.id} display={vendor.vendorName} id={vendor.id} />
-    ));
-  };
+  const vendorOptions = vendors.map(vendor => ({
+    display: vendor.vendorName,
+    value: vendor.id,
+  }));
 
   const unitTypeOptions = unitTypes.map(unit => ({
     display: unit.unitType,
@@ -82,8 +81,8 @@ const CreateProduct = () => {
     value: unit.unitOfMeasurement,
   }));
 
-  const onVendorChange: React.ChangeEventHandler<HTMLSelectElement> = event => {
-    setVendorId(event.target.value);
+  const onVendorChange = (value: string | null) => {
+    setVendorId(value || "");
   };
 
   const onUnitTypeChange = (value: string | null) => {
@@ -153,14 +152,12 @@ const CreateProduct = () => {
   return (
     <div className="border-[1px] border-indigo-700 rounded-md shadow-md shadow-black p-2 flex flex-col gap-5">
       <div className="flex gap-2">
-        <h2 className="text-xl bg-indigo-800 font-bold rounded-md p-2">
-          Create a new product in your venue
-        </h2>
+        <h2 className="text-xl font-bold">Create a new product in your venue</h2>
         <button
-          className="bg-orange-800 font-bold text-lg p-1 px-4 max-h-12"
+          className="bg-white text-indigo-700 font-bold text-lg p-1 px-4 max-h-12"
           onClick={onClose}
         >
-          Close
+          Back
         </button>
       </div>
       <Form>
@@ -178,15 +175,11 @@ const CreateProduct = () => {
         </Field>
         <Field>
           <label htmlFor="vendorId">Vendor</label>
-          <select
-            id="vendorId"
-            onChange={onVendorChange}
-            value={vendorId}
-            className="p-2 px-4 pr-8 rounded-full "
-          >
-            <Option display="Select a vendor" id="" />
-            {renderOptions()}
-          </select>
+          <Combo
+            options={vendorOptions}
+            selectedOption={vendorId}
+            setSelectedOption={onVendorChange}
+          />
         </Field>
         <Field>
           <label htmlFor="unitType">Unit Type</label>
@@ -234,6 +227,9 @@ const CreateProduct = () => {
             options={unitOfMeasurementsOptions}
           />
         </div>
+        <DescribeProduct
+          product={{ displayName, packageQuantity: packageQuantity!, packageType, unitType }}
+        />
         <CallToAction disabled={!verifyFields() || status === "loading"} action={onCreate}>
           Create
         </CallToAction>
@@ -243,7 +239,3 @@ const CreateProduct = () => {
 };
 
 export default CreateProduct;
-
-const Option = ({ display, id }: { display: string; id: string }) => {
-  return <option value={id}>{display}</option>;
-};

@@ -1,37 +1,31 @@
+import { PartialBy } from "src/utils/types";
 import axios from "../config/axios";
 import { axiosHandler } from "./axiosHandler";
 
 export type ProductDetail = {
   id: string;
-  displayName: string;
-  vendor: { vendorName: string };
-  vendorId: string;
   venueId: string;
-  size?: number;
-  measure?: string;
-};
-
-export type ProductList = {
-  id: string;
-  displayName: string;
-  vendorId: string;
-  vendorName: string;
-  unitType: string;
-  packageType: string;
-  packageQuantity: number;
-  size: number;
-  unitOfMeasurement: string;
-}[];
-
-type CreateProduct = {
-  venueId: string;
-  vendorId: string;
+  vendorId?: string | null;
+  vendorName?: string;
   displayName: string;
   unitType: string;
   packageType: string;
   packageQuantity: number;
   size?: number;
   unitOfMeasurement?: string;
+};
+
+export type ProductList = ProductDetail[];
+
+type CreateProduct = PartialBy<ProductDetail, "id">;
+
+export type UpdateFields = {
+  displayName?: string;
+  unitType?: string;
+  packageType?: string;
+  packageQuantity?: number;
+  size?: number | null;
+  unitOfMeasurement?: string | null;
 };
 
 const createProduct = async ({
@@ -55,37 +49,27 @@ const createProduct = async ({
   });
 };
 
-const deleteProduct = async ({
-  venueId,
-  productId,
-}: {
-  venueId: string;
-  productId: string;
-}) => {
-  return await axios.delete(`/venue/${venueId}/products/${productId}`);
-};
-
-type UpdateFields = {
-  displayName?: string;
-  unitType?: string;
-  packageType?: string;
-  packageQuantity?: number;
-  size?: number | null;
-  unitOfMeasurement?: string | null;
+const deleteProduct = async ({ id, venueId }: ProductDetail) => {
+  return await axios.delete(`/venue/${venueId}/products/${id}`);
 };
 
 const updateProduct = async ({
   venueId,
-  productId,
+  id,
   update,
-}: {
-  venueId: string;
-  productId: string;
-  update: UpdateFields;
-}) => {
-  return await axios.put(`/venue/${venueId}/products/${productId}`, update);
+}: ProductDetail & { update: UpdateFields }) => {
+  return await axios.put(`/venue/${venueId}/products/${id}`, update);
+};
+
+const updateProductVendor = async ({
+  venueId,
+  id,
+  vendorId,
+}: ProductDetail & { vendorId: string | null; vendorName: string | null }) => {
+  return await axios.put(`/venue/${venueId}/products/${id}/vendor`, { vendorId });
 };
 
 export const createProductApi = axiosHandler(createProduct);
 export const deleteProductApi = axiosHandler(deleteProduct);
 export const updateProductApi = axiosHandler(updateProduct);
+export const updateProductVendorApi = axiosHandler(updateProductVendor);

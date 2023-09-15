@@ -1,12 +1,14 @@
-import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useVenueContext } from "src/hooks/useContexts";
 import { useDeleteProduct, useProductDetail } from "src/hooks/useProducts";
-import EditIcon from "src/common/icons/Edit";
-import EditProductName from "./edit/ProductName";
-import EditProductSize from "./edit/ProductSize";
-import EditProductPackageType from "./edit/ProductPackageType";
-import EditUnitType from "./edit/ProductUnitType";
+import EditDisplayName from "./edit/EditDisplayName";
+import EditSize from "./edit/EditSize";
+import EditPackageType from "./edit/EditPackageType";
+import EditUnitType from "./edit/EditUnitType";
+import EditPackageQuantity from "./edit/EditPackageQuantity";
+import EditUnitOfMeasurement from "./edit/EditUnitOfMeasurement";
+import EditVendor from "./edit/EditVendor";
+import DescribeProduct from "./edit/DescribeProduct";
 
 const ProductDetails = () => {
   const { venueId } = useVenueContext();
@@ -14,93 +16,38 @@ const ProductDetails = () => {
   const { data: product } = useProductDetail(productId!, venueId);
   const { deleteProduct } = useDeleteProduct(venueId);
 
-  const [editName, setEditName] = useState(false);
-  const [editUnitType, setEditUnitType] = useState(false);
-  const [editPackageType, setEditPackageType] = useState(false);
-  const [editPackageQuantity, setEditPackageQuantity] = useState(false);
-  const [editSize, setEditSize] = useState(false);
-  const [editUnitOfMeasurement, setEditUnitOfMeasurement] = useState(false);
-
   const nav = useNavigate();
 
-  if (!product) return <div>Product not found</div>;
-
   const onDelete = () => {
-    deleteProduct(
-      { productId: productId!, venueId },
-      {
-        onSuccess: () => {
-          nav("../", { relative: "path" });
-        },
-      }
-    );
+    deleteProduct(product!, {
+      onSuccess: () => {
+        nav("../", { relative: "path" });
+      },
+    });
   };
+
+  if (!product) return <div>Product not found</div>;
 
   return (
     <div className="flex flex-col gap-3">
       <h2 className="font-bold text-2xl">Edit Product</h2>
       <div className="">
-        <label className="w-full">Product</label>
-        {editName ? (
-          <EditProductName
-            productId={product.id}
-            initialName={product.displayName}
-            close={() => setEditName(false)}
-          />
-        ) : (
-          <div
-            onClick={() => setEditName(true)}
-            className="flex gap-2 text-indigo-100 bg-zinc-700 rounded-lg p-2 px-3"
-          >
-            <span className="place-self-center">
-              <EditIcon />
-            </span>
-            {product.displayName}
-          </div>
-        )}
-
-        <label className="">Size</label>
-        {editSize ? (
-          <EditProductSize
-            productId={product.id}
-            initialSize={product.size}
-            close={() => setEditSize(false)}
-          />
-        ) : (
-          <div
-            onClick={() => setEditSize(true)}
-            className="flex gap-2 text-indigo-100 bg-zinc-700 rounded-lg p-2 px-3 w-full"
-          >
-            <span className="place-self-center">
-              <EditIcon />
-            </span>
-            {product.size}
-          </div>
-        )}
-        <label>Package Type</label>
-        <EditUnitType productId={productId!} unitType={product.unitType} />
-        {editPackageType ? (
-          <EditProductPackageType
-            productId={product.id}
-            initialPackageType={product.packageType}
-            close={() => setEditPackageType(false)}
-          />
-        ) : (
-          <div
-            onClick={() => setEditPackageType(true)}
-            className="flex gap-2 text-indigo-100 bg-zinc-700 rounded-lg p-2 px-3"
-          >
-            <span>
-              <EditIcon />
-            </span>
-            {product.packageType}
-          </div>
-        )}
-
+        <EditDisplayName product={product} />
+        <EditVendor product={product} />
+        <EditUnitType product={product} />
+        <div className="grid grid-cols-[2fr,_1fr] gap-3">
+          <EditPackageType product={product} />
+          <EditPackageQuantity product={product} />
+        </div>
+        <div className="grid grid-cols-[2fr,_1fr] gap-3">
+          <EditSize product={product} />
+          <EditUnitOfMeasurement product={product} />
+        </div>
         <button className="p-1 bg-orange-500" onClick={onDelete}>
           Delete
         </button>
       </div>
+      <DescribeProduct product={product} />
     </div>
   );
 };
