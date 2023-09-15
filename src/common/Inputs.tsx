@@ -19,11 +19,13 @@ export const Input = ({
 
   useEffect(() => {
     if (!ref.current) return;
+    ref.current.value = "";
     if (ref.current.type !== "text") return;
     ref.current.selectionStart = 0;
     ref.current.selectionEnd = ref.current.value.length;
   }, []);
 
+  useShortcuts("Tab", onSave, ref);
   useKeyboardSaveOrEscape(onSave, close, ref);
 
   return (
@@ -59,7 +61,7 @@ type ComboProps = {
   label?: string;
   options: {
     display: string;
-    value: string;
+    value: string | null;
   }[];
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
@@ -83,7 +85,7 @@ export const Combo = ({
   );
 
   const setSelected = useCallback(
-    (value: string) => {
+    (value: string | null) => {
       setSelectedOption(value);
       setMarkForClose(true);
       setQuery("");
@@ -136,6 +138,7 @@ export const Combo = ({
   useShortcuts("ArrowDown", onDownKey, ref);
   useShortcuts("ArrowUp", onUpKey, ref);
   useShortcuts("Enter", onEnterKey, ref);
+  useShortcuts("Tab", onEnterKey, ref);
   useShortcuts("Backspace", onBackspaceKey, ref);
 
   useEffect(() => {
@@ -150,7 +153,7 @@ export const Combo = ({
     }
   }, [markForClose, setFocused]);
 
-  const setActive = (value: string) => {
+  const setActive = (value: string | null) => {
     setActiveOption(value);
   };
 
@@ -217,6 +220,7 @@ export const Combo = ({
         type="text"
         {...inputProps}
         onBlur={onBlur}
+        autoComplete="off"
       />
       {focused && filteredOptions.length > 0 && (
         <div className="absolute bg-zinc-900 w-full top-full rounded-md border-lime-400 border-[1px] flex flex-col max-h-48 overflow-auto z-50">
@@ -228,7 +232,7 @@ export const Combo = ({
 };
 
 type FilterOptions = {
-  value: string;
+  value: string | null;
   display: string;
 }[];
 
@@ -256,13 +260,13 @@ function ComboOption({
   setActive,
   setSelected,
 }: {
-  value: string;
+  value: string | null;
   display: string;
   selected: boolean;
   active: boolean;
   subDisplay?: string;
-  setActive: (value: string) => void;
-  setSelected: (value: string) => void;
+  setActive: (value: string | null) => void;
+  setSelected: (value: string | null) => void;
 }) {
   const activeStyles = active ? "bg-zinc-700" : "";
   const onActivated = () => {
