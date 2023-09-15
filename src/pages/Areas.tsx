@@ -7,7 +7,6 @@ const Areas = () => {
   return (
     <ProductsProvider venueId={venueId}>
       <div className="flex p-3 flex-col gap-3">
-        <h1 className="text-3xl p-2 ">Areas</h1>
         <Outlet />
       </div>
     </ProductsProvider>

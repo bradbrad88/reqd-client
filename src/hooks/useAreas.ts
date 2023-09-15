@@ -4,8 +4,10 @@ import { useMutation } from "./useMutation";
 import {
   addProductToVenueAreaApi,
   createAreaApi,
+  deleteAreaApi,
   removeProductFromVenueAreaApi,
 } from "api/areas";
+import { ProductDetail } from "api/products";
 
 type AreaList = {
   id: string;
@@ -14,24 +16,19 @@ type AreaList = {
 type AreaFilters = undefined;
 export type ProductLocation = {
   id: string;
-  productId: string;
   parLevel: number;
   sortedOrder: number;
-  displayName: string;
-  size: number;
-  measure: string;
-  package: string;
-  packageType: string;
-  orderUnits: string;
-};
+} & Omit<ProductDetail, "id"> & { productId: string };
 type AreaDetail = {
   id: string;
   areaName: string;
   products: ProductLocation[];
 };
 
-export const useAreaList = listFactory<AreaList, AreaFilters>("areas");
-export const useAreaDetail = detailFactory<AreaDetail>("areas");
+const RESOURCE = "areas" as const;
+
+export const useAreaList = listFactory<AreaList, AreaFilters>(RESOURCE);
+export const useAreaDetail = detailFactory<AreaDetail>(RESOURCE);
 
 const schema = z.object({
   id: z.string(),
@@ -42,19 +39,25 @@ const schema = z.object({
 });
 
 export const useCreateArea = (venueId: string) => {
-  const key = keys.all(venueId, "areas");
+  const key = keys.all(venueId, RESOURCE);
   const { mutate } = useMutation(key, createAreaApi);
   return { mutate };
 };
 
+export const useDeleteArea = (venueId: string) => {
+  const key = keys.all(venueId, RESOURCE);
+  const { mutate } = useMutation(key, deleteAreaApi);
+  return { deleteArea: mutate };
+};
+
 export const useAddProductToArea = (venueId: string, areaId: string) => {
-  const key = keys.detail(venueId, "areas", areaId);
+  const key = keys.detail(venueId, RESOURCE, areaId);
   const { mutate } = useMutation(key, addProductToVenueAreaApi);
   return { mutate };
 };
 
 export const useRemoveProductFromArea = (venueId: string, areaId: string) => {
-  const key = keys.detail(venueId, "areas", areaId);
+  const key = keys.detail(venueId, RESOURCE, areaId);
   const { mutate } = useMutation(
     key,
     removeProductFromVenueAreaApi,

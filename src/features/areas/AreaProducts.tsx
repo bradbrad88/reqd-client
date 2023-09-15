@@ -1,10 +1,12 @@
 import CallToAction from "common/CallToAction";
-import FlexList from "common/FlexList";
+
+import Drag from "common/icons/Drag";
+
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { ProductDetail } from "src/hooks/useProducts";
+import { ProductLocation } from "src/hooks/useAreas";
 
 type Context = {
-  areaProducts: ProductDetail[];
+  areaProducts: ProductLocation[];
 };
 
 const AreaProducts = () => {
@@ -19,20 +21,39 @@ const AreaProducts = () => {
   };
 
   return (
-    <div>
+    <div className="flex flex-col gap-3">
       <CallToAction action={onNav}>Add Product</CallToAction>
-      <FlexList>{renderProducts()}</FlexList>
+      <div className="flex justify-between">
+        <h2 className="font-bold text-xl">Item</h2>
+        <h2 className="font-bold text-xl">Par Level</h2>
+      </div>
+      <div className="flex flex-col gap-2">{renderProducts()}</div>
     </div>
   );
 };
 
 export default AreaProducts;
 
-function Product({ displayName, id, measure, size }: ProductDetail) {
+function Product({
+  displayName,
+  unitType,
+  size,
+  unitOfMeasurement,
+  parLevel,
+}: ProductLocation) {
   return (
-    <div>
-      <div>{displayName}</div>
-      <div>{measure}</div>
+    <div className="flex justify-between w-full bg-zinc-900 p-3 rounded-md">
+      <div className="flex gap-2">
+        <div className="bg-blue-200">
+          <Drag />
+        </div>
+        <div className="font-bold">{displayName}</div>
+        <div className="italic">
+          {unitType} {size}
+          {unitOfMeasurement}
+        </div>
+      </div>
+      {parLevel}
     </div>
   );
 }
