@@ -23,7 +23,7 @@ const AreaDetails = () => {
         <h2 className="text-2xl font-bold mb-6">{data.areaName}</h2>
         <button onClick={onDelete}>Remove Area</button>
       </div>
-      <Outlet context={{ areaProducts: data.products }} />
+      <Outlet context={{ areaDetail: data, products: data.products }} />
     </div>
   );
 };

@@ -6,24 +6,11 @@ import {
   createAreaApi,
   deleteAreaApi,
   removeProductFromVenueAreaApi,
+  setProductLocationParLevelApi,
 } from "api/areas";
-import { ProductDetail } from "api/products";
+import type { AreaList, AreaDetail } from "api/areas";
 
-type AreaList = {
-  id: string;
-  areaName: string;
-}[];
 type AreaFilters = undefined;
-export type ProductLocation = {
-  id: string;
-  parLevel: number;
-  sortedOrder: number;
-} & Omit<ProductDetail, "id"> & { productId: string };
-type AreaDetail = {
-  id: string;
-  areaName: string;
-  products: ProductLocation[];
-};
 
 const RESOURCE = "areas" as const;
 
@@ -70,5 +57,22 @@ export const useRemoveProductFromArea = (venueId: string, areaId: string) => {
       };
     }
   );
-  return { mutate };
+  return { removeProduct: mutate };
+};
+
+export const useSetProductLocationParLevel = (venueId: string, areaId: string) => {
+  const key = keys.detail(venueId, RESOURCE, areaId);
+  const { mutate } = useMutation(
+    key,
+    setProductLocationParLevelApi,
+    (previous, vars): AreaDetail => {
+      const newLocations = vars.products.map(product => {
+        if (product.id !== vars.productLocationId) return product;
+        return { ...product, parLevel: vars.parLevel };
+      });
+      return { id: vars.id, areaName: vars.areaName, products: newLocations };
+    }
+  );
+
+  return { setParLevel: mutate };
 };
