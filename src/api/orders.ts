@@ -8,17 +8,15 @@ const createOrder = async ({ venueId }: { venueId: string }) => {
 };
 
 const setProductAmount = async ({
+  id,
   venueId,
-  data,
-  orderId,
-}: {
-  venueId: string;
-  orderId: string;
-  data: { productId: string; productLocationId: string; amount: number };
+  update,
+}: OrderDetail & {
+  update: { productId: string; productLocationId: string; amount: number };
 }) => {
   return await axios.post<OrderDetail>(
-    `/venue/${venueId}/orders/${orderId}/product-amount`,
-    data
+    `/venue/${venueId}/orders/${id}/product-amount`,
+    update
   );
 };
 

@@ -14,6 +14,7 @@ type OrderFilters = undefined;
 
 export type OrderDetail = {
   id: string;
+  venueId: string;
   createdAt: string;
   updatedAt: string;
   items: {
@@ -55,28 +56,40 @@ export const useSetProductAmount = (venueId: string, orderId: string) => {
   const { mutate } = useMutation(
     key,
     setProductAmountApi,
-    (prev, { data: { productLocationId, amount, productId } }) => {
-      const data = OrderDetailSchema.parse(prev);
-
-      const items = data.items.map(item => {
-        if (item.productId !== productId) return item;
-        const areaAmounts = item.areaAmounts.map(areaAmount => {
-          if (areaAmount.productLocationId !== productLocationId) return areaAmount;
-          return {
-            ...areaAmount,
-            amount,
-          };
-        });
-        const totalAmount = areaAmounts.reduce((total, area) => total + area.amount, 0);
+    // Optimistic Update
+    (prev, { update: { productLocationId, amount, productId }, ...order }) => {
+      // No cached orderDetail value
+      if (!prev) {
         return {
-          ...item,
-          totalAmount,
-          areaAmounts,
+          ...order,
+          items: [
+            { productId, totalAmount: amount, areaAmounts: [productLocationId, amount] },
+          ],
         };
-      });
+      }
 
+      // Find or create the current product item
+      const data = OrderDetailSchema.parse(prev);
+      const item = data.items.find(item => item.productId === productId) || {
+        productId,
+        totalAmount: 0,
+        areaAmounts: [],
+      };
+
+      // Update or create areaAmount with productLocationId and amount
+      const areaAmount = { productLocationId, amount };
+      const newAreaAmounts = item.areaAmounts
+        .filter(areaAmount => areaAmount.productLocationId !== productLocationId)
+        .concat(areaAmount);
+      item.areaAmounts = newAreaAmounts;
+      item.totalAmount = newAreaAmounts.reduce(
+        (total, areaAmount) => total + areaAmount.amount,
+        0
+      );
+
+      const items = data.items.filter(item => item.productId !== productId).concat(item);
       return {
-        ...data,
+        ...order,
         items,
       };
     }

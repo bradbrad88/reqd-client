@@ -27,9 +27,8 @@ const ItemForm = ({ order, productLocation, productAmounts = [] }: Props) => {
   const onIncrease = () => {
     const amount = areaAmount + incrementAmount;
     mutate({
-      venueId,
-      orderId: order.id,
-      data: {
+      ...order,
+      update: {
         productId: productLocation.productId,
         productLocationId: productLocation.id,
         amount,
@@ -41,9 +40,8 @@ const ItemForm = ({ order, productLocation, productAmounts = [] }: Props) => {
     const newAmount = areaAmount - incrementAmount;
     const amount = newAmount < 0 ? 0 : newAmount;
     mutate({
-      venueId,
-      orderId: order.id,
-      data: {
+      ...order,
+      update: {
         productId: productLocation.productId,
         productLocationId: productLocation.id,
         amount,
