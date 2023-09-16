@@ -13,9 +13,8 @@ const OrderDetails = () => {
 
   const renderAreas = () => {
     if (!areas) return null;
-    return areas.map(area => (
-      <Area key={area.id} orderItems={order?.items || []} orderId={orderId!} {...area} />
-    ));
+    if (!order) return null;
+    return areas.map(area => <Area key={area.id} areaId={area.id} order={order} />);
   };
 
   if (!order) return <div>Loading</div>;

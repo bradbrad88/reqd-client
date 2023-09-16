@@ -3,14 +3,16 @@ import FlexList from "common/FlexList";
 import ListItem from "common/ListItem";
 import { useNavigate } from "react-router-dom";
 import { useVenueContext } from "src/hooks/useContexts";
-import { useOrderList } from "src/hooks/useOrders";
+import { useCreateOrder, useOrderList } from "src/hooks/useOrders";
 
 const OrderList = () => {
   const { venueId } = useVenueContext();
   const { data: orders } = useOrderList(venueId);
+  const { createOrderAsync } = useCreateOrder(venueId);
   const nav = useNavigate();
-  const onNewOrder = () => {
-    nav("create");
+  const onNewOrder = async () => {
+    const res = (await createOrderAsync({ venueId })) as { id: string };
+    nav(res.id);
   };
 
   const renderOrders = () => {

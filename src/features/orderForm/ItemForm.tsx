@@ -1,63 +1,97 @@
+import { ProductLocation } from "api/areas";
 import { useMemo } from "react";
 import { useVenueContext } from "src/hooks/useContexts";
 import { OrderDetail, useSetProductAmount } from "src/hooks/useOrders";
 
 type Props = {
-  orderId: string;
-  productId: string;
-  displayName: string;
-  size: number;
-  measure: string;
-  areaId: string;
+  productLocation: ProductLocation;
+  order: OrderDetail;
   productAmounts?: OrderDetail["items"][number]["areaAmounts"];
 };
 
-const ItemForm = ({
-  orderId,
-  productId,
-  areaId,
-  displayName,
-  size,
-  measure,
-  productAmounts = [],
-}: Props) => {
+const ItemForm = ({ order, productLocation, productAmounts = [] }: Props) => {
   const { venueId } = useVenueContext();
-  // TODO: Bring in increment amount - should be part of Product object
-  const incrementAmount = 6;
 
-  const { mutate } = useSetProductAmount(venueId, orderId);
-  const units = "cases";
+  const incrementAmount = productLocation.packageQuantity;
+
+  const { mutate } = useSetProductAmount(venueId, order.id);
 
   const areaAmount = useMemo(() => {
-    const productAmount = productAmounts.find(
-      productAmount => productAmount.areaId === areaId
-    );
+    const productAmount = productAmounts.find(productAmount => {
+      return productAmount.productLocationId === productLocation.id;
+    });
+
     return productAmount?.amount || 0;
-  }, [productAmounts, areaId]);
+  }, [productAmounts, productLocation.id]);
 
   const onIncrease = () => {
     const amount = areaAmount + incrementAmount;
-    mutate({ venueId, orderId, data: { productId, areaId, amount } });
+    mutate({
+      venueId,
+      orderId: order.id,
+      data: {
+        productId: productLocation.productId,
+        productLocationId: productLocation.id,
+        amount,
+      },
+    });
   };
 
   const onDecrease = () => {
     const newAmount = areaAmount - incrementAmount;
     const amount = newAmount < 0 ? 0 : newAmount;
-    mutate({ venueId, orderId, data: { productId, areaId, amount } });
+    mutate({
+      venueId,
+      orderId: order.id,
+      data: {
+        productId: productLocation.productId,
+        productLocationId: productLocation.id,
+        amount,
+      },
+    });
   };
 
+  const packageAmount = areaAmount / productLocation.packageQuantity;
+
+  const zeroAmountTitleStyles = "text-zinc-400";
+  const positiveAmountTitleStyles = "text-white";
+
+  const zeroAmountDetailStyles = "text-indigo-300";
+  const positiveAmountDetailStyles = "text-lime-300";
+
   return (
-    <div>
-      {displayName} {size}
-      {measure} <br />
-      Test: {areaAmount} <br />
-      Order: {areaAmount} {units}
-      <div className="flex flex-row justify-between">
-        <button className="p-1 px-5 h-full" onClick={onDecrease}>
-          Decrease
+    <div className="bg-zinc-900 p-2 py-1 rounded-md flex flex-col gap-1">
+      <div
+        className={
+          "text-lg font-bold " +
+          (areaAmount > 0 ? positiveAmountTitleStyles : zeroAmountTitleStyles)
+        }
+      >
+        {productLocation.displayName} {productLocation.unitType}s {productLocation.size}
+        {productLocation.unitOfMeasurement} <br />
+      </div>
+      <div className="grid grid-cols-[3rem,_1fr,_3rem]">
+        <button
+          className="p-0 px-1 h-min border-indigo-600 bg-zinc-950 border-[1px] font-bold text-xl"
+          onClick={onDecrease}
+        >
+          -
         </button>
-        <button className="p-1 px-5 h-full" onClick={onIncrease}>
-          Increase
+        <div
+          className={
+            "text-center font-bold " +
+            (areaAmount > 0 ? positiveAmountDetailStyles : zeroAmountDetailStyles)
+          }
+        >
+          {packageAmount} {productLocation.packageType}
+          {packageAmount === 1 ? "" : "s"} ({areaAmount} {productLocation.unitType}
+          {areaAmount === 1 ? "" : "s"})
+        </div>
+        <button
+          className="p-0 px-1 h-min bg-zinc-950 outline-none focus-within:outline-none focus-visible:outline-none focus-within:border-lime-300 border-lime-600 border-[1px] font-bold text-xl"
+          onClick={onIncrease}
+        >
+          +
         </button>
       </div>
     </div>

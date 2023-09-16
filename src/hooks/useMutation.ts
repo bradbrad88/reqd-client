@@ -6,7 +6,7 @@ export const useMutation = <DataReturn, Variables>(
   optimisticUpdater?: (previous: DataReturn, vars: Variables) => DataReturn
 ) => {
   const client = useQueryClient();
-  const { mutate, status } = useM(mutateFn, {
+  const { mutate, status, mutateAsync } = useM(mutateFn, {
     onMutate: async vars => {
       if (!optimisticUpdater) return;
 
@@ -20,5 +20,5 @@ export const useMutation = <DataReturn, Variables>(
     },
   });
 
-  return { mutate, status };
+  return { mutate, status, mutateAsync };
 };

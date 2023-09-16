@@ -19,7 +19,7 @@ export type OrderDetail = {
   items: {
     productId: string;
     totalAmount: number;
-    areaAmounts: { areaId: string; amount: number }[];
+    areaAmounts: { productLocationId: string; amount: number }[];
   }[];
 };
 
@@ -28,8 +28,8 @@ export const useOrderDetail = detailFactory<OrderDetail>(RESOURCE);
 
 export const useCreateOrder = (venueId: string) => {
   const key = keys.all(venueId, RESOURCE);
-  const { mutate } = useMutation(key, createOrderApi);
-  return { mutate };
+  const { mutate, mutateAsync } = useMutation(key, createOrderApi);
+  return { createOrder: mutate, createOrderAsync: mutateAsync };
 };
 
 const OrderDetailSchema = z.object({
@@ -42,25 +42,26 @@ const OrderDetailSchema = z.object({
       totalAmount: z.number(),
       areaAmounts: z
         .object({
-          areaId: z.string(),
+          productLocationId: z.string(),
           amount: z.number(),
         })
         .array(),
     })
     .array(),
 });
+
 export const useSetProductAmount = (venueId: string, orderId: string) => {
   const key = keys.detail(venueId, RESOURCE, orderId);
   const { mutate } = useMutation(
     key,
     setProductAmountApi,
-    (prev, { data: { areaId, amount, productId } }) => {
+    (prev, { data: { productLocationId, amount, productId } }) => {
       const data = OrderDetailSchema.parse(prev);
 
       const items = data.items.map(item => {
         if (item.productId !== productId) return item;
         const areaAmounts = item.areaAmounts.map(areaAmount => {
-          if (areaAmount.areaId !== areaId) return areaAmount;
+          if (areaAmount.productLocationId !== productLocationId) return areaAmount;
           return {
             ...areaAmount,
             amount,

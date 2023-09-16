@@ -3,8 +3,8 @@ import { axiosHandler } from "./axiosHandler";
 
 import type { OrderDetail } from "src/hooks/useOrders";
 
-const createOrder = async (venueId: string) => {
-  return await axios.post(`/venue/${venueId}/orders`);
+const createOrder = async ({ venueId }: { venueId: string }) => {
+  return await axios.post<{ id: string; createdAt: Date }>(`/venue/${venueId}/orders`);
 };
 
 const setProductAmount = async ({
@@ -14,7 +14,7 @@ const setProductAmount = async ({
 }: {
   venueId: string;
   orderId: string;
-  data: { productId: string; areaId: string; amount: number };
+  data: { productId: string; productLocationId: string; amount: number };
 }) => {
   return await axios.post<OrderDetail>(
     `/venue/${venueId}/orders/${orderId}/product-amount`,

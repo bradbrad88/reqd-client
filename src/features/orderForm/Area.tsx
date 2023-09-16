@@ -5,29 +5,28 @@ import ItemForm from "./ItemForm";
 import { OrderDetail } from "src/hooks/useOrders";
 
 type Props = {
-  id: string;
-  areaName: string;
-  orderId: string;
-  orderItems: OrderDetail["items"];
+  areaId: string;
+  order: OrderDetail;
 };
 
-const Area = ({ id, areaName, orderId, orderItems }: Props) => {
+const Area = ({ areaId, order }: Props) => {
   const { venueId } = useVenueContext();
-  const { data: area } = useAreaDetail(id, venueId);
+  const { data: area } = useAreaDetail(areaId, venueId);
+
+  if (!area) return <div>Loading...</div>;
+
   const renderProducts = () => {
-    if (!area) return [];
+    if (!area) return null;
     return area.products.map(product => {
-      const productAmounts = orderItems.find(item => item.productId === product.id);
+      const productAmounts = order.items.find(item => {
+        return item.productId === product.productId;
+      });
       return (
         <ItemForm
           key={product.id}
-          areaId={id}
-          orderId={orderId}
-          productId={product.productId}
+          order={order}
+          productLocation={product}
           productAmounts={productAmounts?.areaAmounts}
-          displayName={product.displayName}
-          measure={product.measure}
-          size={product.size}
         />
       );
     });
@@ -35,7 +34,7 @@ const Area = ({ id, areaName, orderId, orderItems }: Props) => {
 
   return (
     <div>
-      <h1 className="text-3xl text-indigo-500">{areaName}</h1>
+      <h1 className="text-3xl text-indigo-500">{area?.areaName}</h1>
       <FlexList>{renderProducts()}</FlexList>
     </div>
   );
