@@ -4,8 +4,6 @@ const Context = createContext<ContextType | null>(null);
 
 type Props = {
   children: React.ReactNode;
-  venueId: string;
-  venueName: string;
 };
 
 type ContextType = {
@@ -13,7 +11,9 @@ type ContextType = {
   venueName: string;
 };
 
-export const VenueProvider = ({ venueId, venueName, children }: Props) => {
+export const VenueProvider = ({ children }: Props) => {
+  const venueId = import.meta.env.VITE_VENUE_ID;
+  const venueName = import.meta.env.VITE_VENUE_NAME;
   return <Context.Provider value={{ venueId, venueName }}>{children}</Context.Provider>;
 };
 

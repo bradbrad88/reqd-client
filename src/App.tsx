@@ -25,7 +25,7 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <VenueProvider venueId="fab75a74-a16b-46db-b8c7-b32cd6a641fa" venueName="Bradstead">
+      <VenueProvider>
         <Router>
           <Link to={"/"}>
             <div className="w-full">
