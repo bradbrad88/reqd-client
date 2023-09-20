@@ -1,7 +1,8 @@
-import { ProductLocation } from "api/areas";
 import { useMemo } from "react";
+import { OrderDetail } from "api/orders";
+import { ProductLocation } from "api/areas";
 import { useVenueContext } from "src/hooks/useContexts";
-import { OrderDetail, useSetProductAmount } from "src/hooks/useOrders";
+import { useSetProductAmount } from "src/hooks/useOrders";
 
 type Props = {
   productLocation: ProductLocation;
@@ -68,16 +69,10 @@ const ItemForm = ({ order, productLocation, productAmounts = [] }: Props) => {
         {productLocation.displayName} {productLocation.unitType}s {productLocation.size}
         {productLocation.unitOfMeasurement} <br />
       </div>
-      <div className="grid grid-cols-[3rem,_1fr,_3rem]">
-        <button
-          className="p-0 px-1 h-min border-indigo-600 bg-zinc-950 border-[1px] font-bold text-xl"
-          onClick={onDecrease}
-        >
-          -
-        </button>
+      <div className="grid grid-cols-[1fr,_min-content]">
         <div
           className={
-            "text-center font-bold " +
+            "pl-2 font-bold " +
             (areaAmount > 0 ? positiveAmountDetailStyles : zeroAmountDetailStyles)
           }
         >
@@ -85,12 +80,20 @@ const ItemForm = ({ order, productLocation, productAmounts = [] }: Props) => {
           {packageAmount === 1 ? "" : "s"} ({areaAmount} {productLocation.unitType}
           {areaAmount === 1 ? "" : "s"})
         </div>
-        <button
-          className="p-0 px-1 h-min bg-zinc-950 outline-none focus-within:outline-none focus-visible:outline-none focus-within:border-lime-300 border-lime-600 border-[1px] font-bold text-xl"
-          onClick={onIncrease}
-        >
-          +
-        </button>
+        <div className="flex gap-6">
+          <button
+            className="w-12 p-1 h-min border-indigo-600 bg-zinc-950 border-[1px] font-bold text-xl"
+            onClick={onDecrease}
+          >
+            -
+          </button>
+          <button
+            className="w-12 p-1 h-min bg-zinc-950 outline-none focus-within:outline-none focus-visible:outline-none focus-within:border-lime-300 border-lime-600 border-[1px] font-bold text-xl"
+            onClick={onIncrease}
+          >
+            +
+          </button>
+        </div>
       </div>
     </div>
   );
