@@ -1,28 +1,11 @@
 import { detailFactory, keys, listFactory } from "api/querieFactory";
 import { useMutation } from "./useMutation";
-import { createOrderApi, setProductAmountApi } from "api/orders";
+import { OrderDetail, OrderList, createOrderApi, setProductAmountApi } from "api/orders";
 import { z } from "zod";
 
 const RESOURCE = "orders" as const;
 
-type OrderList = {
-  id: string;
-  createdAt: string;
-}[];
-
 type OrderFilters = undefined;
-
-export type OrderDetail = {
-  id: string;
-  venueId: string;
-  createdAt: string;
-  updatedAt: string;
-  items: {
-    productId: string;
-    totalAmount: number;
-    areaAmounts: { productLocationId: string; amount: number }[];
-  }[];
-};
 
 export const useOrderList = listFactory<OrderList, OrderFilters>(RESOURCE);
 export const useOrderDetail = detailFactory<OrderDetail>(RESOURCE);
