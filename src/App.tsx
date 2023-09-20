@@ -1,8 +1,7 @@
-import Areas from "./pages/Areas";
 import { QueryClient, QueryClientProvider } from "react-query";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { VenueProvider } from "./contexts/VenueContext";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import Home from "./pages/Home";
+import Areas from "./pages/Areas";
 import Products from "./pages/Products";
 import CreateProduct from "./features/products/CreateProduct";
 import ProductList from "./features/products/ProductList";
@@ -19,6 +18,8 @@ import AreaProducts from "features/areas/AreaProducts";
 import Orders from "./pages/Orders";
 import OrderList from "features/orderForm/OrderList";
 import OrderDetail from "features/orderForm/OrderDetails";
+import Shell from "common/Shell";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -27,36 +28,34 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <VenueProvider>
         <Router>
-          <Link to={"/"}>
-            <div className="w-full">
-              <div className="ml-auto w-fit">Home</div>
-            </div>
-          </Link>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="products" element={<Products />}>
-              <Route path="" element={<ProductList />} />
-              <Route path="create" element={<CreateProduct />} />
-              <Route path=":productId" element={<ProductDetails />} />
-            </Route>
-            <Route path="vendors" element={<Vendors />}>
-              <Route path="" element={<VendorList />} />
-              <Route path=":vendorId" element={<VendorDetails />} />
-              <Route path="create" element={<CreateVendor />} />
-            </Route>
-            <Route path="areas" element={<Areas />}>
-              <Route path="create" element={<CreateArea />} />
-              <Route path="" element={<AreaList />} />
-              <Route path=":areaId" element={<AreaDetails />}>
-                <Route path="" element={<AreaProducts />} />
-                <Route path="add-product" element={<AddProductToArea />} />
+          <Shell>
+            <Routes>
+              <Route path="" element={<Orders />}>
+                <Route path="" element={<OrderList />} />
+                <Route path=":orderId" element={<OrderDetail />} />
               </Route>
-            </Route>
-            <Route path="orders" element={<Orders />}>
-              <Route path="" element={<OrderList />} />
-              <Route path=":orderId" element={<OrderDetail />} />
-            </Route>
-          </Routes>
+              <Route path="settings" element={<Settings />}>
+                <Route path="products" element={<Products />}>
+                  <Route path="" element={<ProductList />} />
+                  <Route path="create" element={<CreateProduct />} />
+                  <Route path=":productId" element={<ProductDetails />} />
+                </Route>
+                <Route path="vendors" element={<Vendors />}>
+                  <Route path="" element={<VendorList />} />
+                  <Route path=":vendorId" element={<VendorDetails />} />
+                  <Route path="create" element={<CreateVendor />} />
+                </Route>
+                <Route path="areas" element={<Areas />}>
+                  <Route path="create" element={<CreateArea />} />
+                  <Route path="" element={<AreaList />} />
+                  <Route path=":areaId" element={<AreaDetails />}>
+                    <Route path="" element={<AreaProducts />} />
+                    <Route path="add-product" element={<AddProductToArea />} />
+                  </Route>
+                </Route>
+              </Route>
+            </Routes>
+          </Shell>
         </Router>
       </VenueProvider>
     </QueryClientProvider>
