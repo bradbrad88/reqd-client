@@ -37,14 +37,25 @@ export default OrderList;
 type OrderProps = {
   id: string;
   createdAt: string;
+  areas: string[];
+  showAreasLength?: number;
 };
 
-function Order({ id, createdAt }: OrderProps) {
+function Order({ id, createdAt, areas, showAreasLength = 2 }: OrderProps) {
   const nav = useNavigate();
 
   const onClick = () => {
     nav(id);
   };
+
+  const condensedAreas = areas.slice(0, showAreasLength);
+  const remainingAreasLength = areas.length - condensedAreas.length;
+  const remainingAreas =
+    remainingAreasLength < 1
+      ? ""
+      : remainingAreasLength === 1
+      ? " and 1 more area"
+      : ` and ${remainingAreasLength} more areas`;
 
   const renderDate = () => {
     const date = new Date(createdAt);
@@ -52,5 +63,18 @@ function Order({ id, createdAt }: OrderProps) {
     return `${intl} ${date.toLocaleDateString()}`;
   };
 
-  return <div onClick={onClick}>{renderDate()}</div>;
+  return (
+    <div
+      onClick={onClick}
+      className="overflow-clip text-ellipsis whitespace-nowrap text-white"
+    >
+      {renderDate()}
+      {areas.length > 0 && (
+        <span className="pl-2 text-zinc-400 italic text-ellipsis overflow-clip text-sm">
+          {condensedAreas.join(", ")}
+          {remainingAreas}
+        </span>
+      )}
+    </div>
+  );
 }
