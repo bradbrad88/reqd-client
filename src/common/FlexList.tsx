@@ -3,7 +3,7 @@ type Props = {
 };
 
 const FlexList = ({ children }: Props) => {
-  return <div className="flex flex-col gap-2">{children}</div>;
+  return <div className="flex flex-col gap-3">{children}</div>;
 };
 
 export default FlexList;
