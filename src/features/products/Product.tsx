@@ -1,17 +1,15 @@
 import { useNavigate } from "react-router-dom";
 
+import type { ProductList } from "api/products";
+
+type Product = ProductList[number];
 type Props = {
-  id: string;
-  displayName: string;
-  vendorName: string;
-  unitType: string;
-  packageType: string;
-  packageQuantity: number;
-  size?: number;
-  unitOfMeasurement?: string;
+  product: Product;
 };
 
-const Product = ({ id, displayName, unitType, size, unitOfMeasurement }: Props) => {
+const Product = ({
+  product: { id, displayName, unitType, size, unitOfMeasurement },
+}: Props) => {
   const nav = useNavigate();
 
   const onNav = () => {
