@@ -1,30 +1,24 @@
-import { useParams } from "react-router-dom";
+import BackButton from "common/BackButton";
+import { Outlet, useParams } from "react-router-dom";
 import { useVenueContext } from "src/hooks/useContexts";
 import { useOrderDetail } from "src/hooks/useOrders";
-import { useAreaList } from "src/hooks/useAreas";
-import Area from "./Area";
-import FlexList from "common/FlexList";
 
 const OrderDetails = () => {
   const { venueId } = useVenueContext();
   const { orderId } = useParams<{ orderId: string }>();
   const { data: order } = useOrderDetail(orderId!, venueId);
-  const { data: areas } = useAreaList(venueId);
-
-  const renderAreas = () => {
-    if (!areas) return null;
-    if (!order) return null;
-    return areas.map(area => <Area key={area.id} areaId={area.id} order={order} />);
-  };
 
   if (!order) return <div>Loading</div>;
   return (
-    <div>
-      <h2 className="text-2xl font-bold">{new Date(order.createdAt).toLocaleDateString()}</h2>
-      <h3>
-        {order.items.length} item{order.items.length === 1 ? "" : "s"}
-      </h3>
-      <FlexList>{renderAreas()}</FlexList>
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-3">
+        <BackButton />
+        <h2 className="text-2xl font-bold">
+          {new Date(order.createdAt).toLocaleDateString()}
+        </h2>
+      </div>
+
+      <Outlet />
     </div>
   );
 };

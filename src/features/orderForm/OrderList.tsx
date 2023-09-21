@@ -12,7 +12,7 @@ const OrderList = () => {
   const nav = useNavigate();
   const onNewOrder = async () => {
     const res = (await createOrderAsync({ venueId })) as { id: string };
-    nav(res.id);
+    nav(res.id + "/edit");
   };
 
   const renderOrders = () => {

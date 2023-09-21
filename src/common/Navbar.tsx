@@ -91,7 +91,18 @@ const SettingsItem = ({ to, display }: SettingsItemProps) => {
 const NavBarShell = () => {
   return (
     <Routes>
-      <Route path="*" element={<NavBar />} />
+      <Route
+        path="*"
+        element={
+          <NavBar
+            right={
+              <Link to="/">
+                <div className="text-white">Orders</div>
+              </Link>
+            }
+          />
+        }
+      />
       <Route
         path="settings/products/*"
         element={

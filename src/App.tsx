@@ -20,6 +20,9 @@ import OrderList from "features/orderForm/OrderList";
 import OrderDetail from "features/orderForm/OrderDetails";
 import Shell from "common/Shell";
 import Settings from "./pages/Settings";
+import EditOrder from "features/orderForm/EditOrder";
+import OrderVendorList from "features/orderForm/OrderVendorList";
+import SubmitVendorOrder from "features/orderForm/SubmitVendorOrder";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +35,11 @@ function App() {
             <Routes>
               <Route path="" element={<Orders />}>
                 <Route path="" element={<OrderList />} />
-                <Route path=":orderId" element={<OrderDetail />} />
+                <Route path=":orderId" element={<OrderDetail />}>
+                  <Route path="" element={<OrderVendorList />} />
+                  <Route path="edit" element={<EditOrder />} />
+                  <Route path=":vendorId" element={<SubmitVendorOrder />} />
+                </Route>
               </Route>
               <Route path="settings" element={<Settings />}>
                 <Route path="products" element={<Products />}>
