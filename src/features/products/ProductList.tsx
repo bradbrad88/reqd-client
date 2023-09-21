@@ -17,7 +17,7 @@ const ProductList = () => {
 
   const renderProducts = () => {
     if (!products) return null;
-    return products.map(product => <Product key={product.id} {...product} />);
+    return products.map(product => <Product key={product.id} product={product} />);
   };
 
   const openForm = () => {
@@ -26,7 +26,7 @@ const ProductList = () => {
 
   return (
     <div className="flex flex-col gap-5">
-      <Filters />
+      {/* <Filters /> */}
       <CallToAction action={openForm}>Create</CallToAction>
       <FlexList>{renderProducts()}</FlexList>
     </div>
