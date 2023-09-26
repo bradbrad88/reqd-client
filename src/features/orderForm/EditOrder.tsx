@@ -6,14 +6,25 @@ import { useOrderDetail } from "src/hooks/useOrders";
 import { OrderHistoryProvider } from "ctx/OrderHistoryContext";
 import Area from "./Area";
 import FlexList from "common/FlexList";
+import { useMemo } from "react";
+
+export type ProductLocationAreaMap = { [key: string]: { areaName: string; areaId: string } };
 
 const EditOrder = () => {
   const { venueId } = useVenueContext();
   const { orderId } = useParams<{ orderId: string }>();
   const { data: order } = useOrderDetail(orderId!, venueId);
   const { data: areas } = useAreaList(venueId);
-
   const orderHistoryLength = 6;
+
+  const productLocationAreaMap = useMemo(() => {
+    return areas.reduce((map, area) => {
+      for (const location of area.productLocations) {
+        map[location.id] = { areaId: area.id, areaName: area.areaName };
+      }
+      return map;
+    }, {} as ProductLocationAreaMap);
+  }, [areas]);
 
   const orderHistoryDates = () => {
     if (!order) return [];
@@ -28,7 +39,14 @@ const EditOrder = () => {
   const renderAreas = () => {
     if (!areas) return null;
     if (!order) return null;
-    return areas.map(area => <Area key={area.id} areaId={area.id} order={order} />);
+    return areas.map(area => (
+      <Area
+        key={area.id}
+        areaId={area.id}
+        order={order}
+        productLocationAreaMap={productLocationAreaMap}
+      />
+    ));
   };
 
   return (

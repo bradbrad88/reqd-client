@@ -5,6 +5,7 @@ import { ProductDetail } from "./products";
 export type AreaList = {
   id: string;
   areaName: string;
+  productLocations: { id: string }[];
 }[];
 
 export type ProductLocation = {

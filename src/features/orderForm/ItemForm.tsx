@@ -3,6 +3,7 @@ import { formatDayMonth } from "src/utils/dates";
 import { useOrderHistoryContext, useVenueContext } from "src/hooks/useContexts";
 import { useSetProductAmount } from "src/hooks/useOrders";
 import { createArrayOfLength } from "src/utils/arrays";
+import type { ProductLocationAreaMap } from "./EditOrder";
 import type { OrderDetail } from "api/orders";
 import type { ProductLocation } from "api/areas";
 
@@ -10,9 +11,17 @@ type Props = {
   productLocation: ProductLocation;
   order: OrderDetail;
   product: OrderDetail["items"][number] | undefined;
+  productLocationAreaMap: ProductLocationAreaMap;
+  areaId: string;
 };
 
-const ItemForm = ({ order, productLocation, product }: Props) => {
+const ItemForm = ({
+  order,
+  productLocation,
+  product,
+  productLocationAreaMap,
+  areaId,
+}: Props) => {
   const { venueId } = useVenueContext();
   const { productHistory, dates } = useOrderHistoryContext();
   const incrementAmount = productLocation.packageQuantity;
@@ -34,15 +43,17 @@ const ItemForm = ({ order, productLocation, product }: Props) => {
       createArrayOfLength(dates.length).map(() => 0);
     const historyElements = history.map((amount, idx) => {
       const currentDate = idx === dates.length - 1;
+      const isCurrent = currentDate && product && product.totalAmount > 0;
+      const totalAmount = currentDate ? amount + (product?.totalAmount || 0) : amount;
       return (
         <div
           key={idx}
           className="w-full text-right pr-2 border-zinc-600 border-[1px]"
           style={{
-            fontWeight: currentDate && product && product.totalAmount > 0 ? "bold" : "",
+            fontWeight: isCurrent ? "bold" : "",
           }}
         >
-          {currentDate ? amount + (product?.totalAmount || 0) : amount}
+          {totalAmount > 0 ? totalAmount : "-"}
         </div>
       );
     });
@@ -51,7 +62,9 @@ const ItemForm = ({ order, productLocation, product }: Props) => {
 
   const renderDates = () => {
     const dateElements = dates.map(date => (
-      <div className="text-right text-sm pr-2">{formatDayMonth(date)}</div>
+      <div key={date.getTime()} className="text-right text-sm pr-2">
+        {formatDayMonth(date)}
+      </div>
     ));
     return <>{dateElements}</>;
   };
@@ -112,6 +125,11 @@ const ItemForm = ({ order, productLocation, product }: Props) => {
           </button>
         </div>
       </div>
+      <ItemValuesBreakdown
+        product={product!}
+        areaId={areaId}
+        productLocationAreaMap={productLocationAreaMap}
+      />
     </div>
   );
 };
@@ -154,40 +172,56 @@ function OrderAmount({
 
 export default ItemForm;
 
-// type BreakdownProps = {
-//   productId: string;
-//   area: string;
-// };
+type BreakdownProps = {
+  product: OrderDetail["items"][number] | undefined;
+  areaId: string;
+  productLocationAreaMap: ProductLocationAreaMap;
+};
 
-// function ItemValuesBreakdown({ productId, area }: BreakdownProps) {
-//   const renderBreakdown = () => {
-//     return null;
-//     // const item = items.find(item => item.productId === productId);
-//     // if (!item || item.areas.length < 2) return null;
+function ItemValuesBreakdown({ product, areaId, productLocationAreaMap }: BreakdownProps) {
+  const renderBreakdown = () => {
+    if (!product) return null;
+    const productAreasMap = product.areaAmounts.reduce(
+      (map, { amount, productLocationId }) => {
+        const area = productLocationAreaMap[productLocationId] || {
+          areaName: "Unknown area",
+          areaId: "",
+        };
 
-//     // const areas = item.areas;
+        const prev = map.get(area.areaId) || { ...area, amount: 0 };
+        map.set(area.areaId, { ...prev, amount: (prev?.amount || 0) + amount });
+        return map;
+      },
+      new Map<string, { amount: number; areaName: string; areaId: string }>()
+    );
 
-//     // areas.sort(a => {
-//     //   if (a.area === area) return -1;
-//     //   return 0;
-//     // });
-//     // return areas.map(area => (
-//     //   <BreakdownItem area={area.area} amount={area.amount} key={area.area} />
-//     // ));
-//   };
+    const productAreas = Array.from(productAreasMap.values());
 
-//   return <div>{renderBreakdown()}</div>;
-// }
+    productAreas.sort(a => {
+      if (a.areaId === areaId) return -1;
+      return 0;
+    });
 
-// type BreakdownItemProps = {
-//   area: string;
-//   amount: number;
-// };
+    return productAreas.map(area => <BreakdownItem area={area} key={area.areaId} />);
+  };
 
-// function BreakdownItem({ area, amount }: BreakdownItemProps) {
-//   return (
-//     <div>
-//       {area}:{amount}
-//     </div>
-//   );
-// }
+  const breakdown = renderBreakdown();
+
+  return <>{breakdown && breakdown.length > 1 && <div>{breakdown}</div>}</>;
+}
+
+type BreakdownItemProps = {
+  area: {
+    areaName: string;
+    areaId: string;
+    amount: number;
+  };
+};
+
+function BreakdownItem({ area }: BreakdownItemProps) {
+  return (
+    <div>
+      {area.areaName}:{area.amount}
+    </div>
+  );
+}
