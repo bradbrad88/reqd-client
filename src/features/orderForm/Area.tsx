@@ -2,7 +2,7 @@ import FlexList from "common/FlexList";
 import { useAreaDetail } from "src/hooks/useAreas";
 import { useVenueContext } from "src/hooks/useContexts";
 import ItemForm from "./ItemForm";
-import { OrderDetail } from "src/hooks/useOrders";
+import { OrderDetail } from "api/orders";
 
 type Props = {
   areaId: string;
@@ -18,7 +18,7 @@ const Area = ({ areaId, order }: Props) => {
   const renderProducts = () => {
     if (!area) return null;
     return area.products.map(product => {
-      const productAmounts = order.items.find(item => {
+      const productOrder = order.items.find(item => {
         return item.productId === product.productId;
       });
       return (
@@ -26,7 +26,7 @@ const Area = ({ areaId, order }: Props) => {
           key={product.id}
           order={order}
           productLocation={product}
-          productAmounts={productAmounts?.areaAmounts}
+          product={productOrder}
         />
       );
     });

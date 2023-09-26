@@ -21,6 +21,11 @@ export type OrderDetail = {
   }[];
 };
 
+export type OrderHistory = {
+  week: string;
+  products: { productId: string; quantity: number }[];
+};
+
 const createOrder = async ({ venueId }: { venueId: string }) => {
   return await axios.post<{ id: string; createdAt: Date }>(`/venue/${venueId}/orders`);
 };
@@ -38,5 +43,32 @@ const setProductAmount = async ({
   );
 };
 
+const getOrderHistory = async ({
+  venueId,
+  dates,
+  orderId,
+}: {
+  venueId: string;
+  dates: Date[];
+  orderId: string;
+}) => {
+  const dateString = dates
+    .map(date => {
+      date.setHours(0);
+      date.setMinutes(0);
+      date.setSeconds(0);
+      date.setMilliseconds(0);
+      return date.toJSON();
+    })
+    .join(",");
+  return await axios.get<OrderHistory[]>(`/venue/${venueId}/orders/history`, {
+    params: {
+      dates: dateString,
+      orderId,
+    },
+  });
+};
+
 export const createOrderApi = axiosHandler(createOrder);
 export const setProductAmountApi = axiosHandler(setProductAmount);
+export const getOrderHistoryApi = axiosHandler(getOrderHistory);

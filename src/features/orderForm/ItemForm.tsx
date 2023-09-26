@@ -1,29 +1,60 @@
 import { useMemo } from "react";
-import { OrderDetail } from "api/orders";
-import { ProductLocation } from "api/areas";
-import { useVenueContext } from "src/hooks/useContexts";
+import { formatDayMonth } from "src/utils/dates";
+import { useOrderHistoryContext, useVenueContext } from "src/hooks/useContexts";
 import { useSetProductAmount } from "src/hooks/useOrders";
+import { createArrayOfLength } from "src/utils/arrays";
+import type { OrderDetail } from "api/orders";
+import type { ProductLocation } from "api/areas";
 
 type Props = {
   productLocation: ProductLocation;
   order: OrderDetail;
-  productAmounts?: OrderDetail["items"][number]["areaAmounts"];
+  product: OrderDetail["items"][number] | undefined;
 };
 
-const ItemForm = ({ order, productLocation, productAmounts = [] }: Props) => {
+const ItemForm = ({ order, productLocation, product }: Props) => {
   const { venueId } = useVenueContext();
-
+  const { productHistory, dates } = useOrderHistoryContext();
   const incrementAmount = productLocation.packageQuantity;
 
   const { mutate } = useSetProductAmount(venueId, order.id);
 
   const areaAmount = useMemo(() => {
-    const productAmount = productAmounts.find(productAmount => {
+    if (!product) return 0;
+    const productAmount = product.areaAmounts.find(productAmount => {
       return productAmount.productLocationId === productLocation.id;
     });
 
     return productAmount?.amount || 0;
-  }, [productAmounts, productLocation.id]);
+  }, [product, productLocation.id]);
+
+  const renderHistory = () => {
+    const history =
+      productHistory[productLocation.productId] ||
+      createArrayOfLength(dates.length).map(() => 0);
+    const historyElements = history.map((amount, idx) => {
+      const currentDate = idx === dates.length - 1;
+      return (
+        <div
+          key={idx}
+          className="w-full text-right pr-2 border-zinc-600 border-[1px]"
+          style={{
+            fontWeight: currentDate && product && product.totalAmount > 0 ? "bold" : "",
+          }}
+        >
+          {currentDate ? amount + (product?.totalAmount || 0) : amount}
+        </div>
+      );
+    });
+    return <>{historyElements}</>;
+  };
+
+  const renderDates = () => {
+    const dateElements = dates.map(date => (
+      <div className="text-right text-sm pr-2">{formatDayMonth(date)}</div>
+    ));
+    return <>{dateElements}</>;
+  };
 
   const onIncrease = () => {
     const amount = areaAmount + incrementAmount;
@@ -50,36 +81,22 @@ const ItemForm = ({ order, productLocation, productAmounts = [] }: Props) => {
     });
   };
 
-  const packageAmount = areaAmount / productLocation.packageQuantity;
-
-  const zeroAmountTitleStyles = "text-zinc-400";
-  const positiveAmountTitleStyles = "text-white";
-
-  const zeroAmountDetailStyles = "text-indigo-300";
-  const positiveAmountDetailStyles = "text-lime-300";
-
   return (
     <div className="bg-zinc-900 p-2 py-1 rounded-md flex flex-col gap-1">
+      <ProductDescription product={productLocation} highlight={areaAmount > 0} />
+      {/* Display Sales / Order History Table */}
       <div
-        className={
-          "text-lg font-bold " +
-          (areaAmount > 0 ? positiveAmountTitleStyles : zeroAmountTitleStyles)
-        }
+        className="grid"
+        style={{
+          gridTemplateColumns: `repeat(${dates.length}, minmax(0, 1fr))`,
+        }}
       >
-        {productLocation.displayName} {productLocation.unitType}s {productLocation.size}
-        {productLocation.unitOfMeasurement} <br />
+        {renderDates()}
+        {renderHistory()}
       </div>
-      <div className="grid grid-cols-[1fr,_min-content]">
-        <div
-          className={
-            "pl-2 font-bold " +
-            (areaAmount > 0 ? positiveAmountDetailStyles : zeroAmountDetailStyles)
-          }
-        >
-          {packageAmount} {productLocation.packageType}
-          {packageAmount === 1 ? "" : "s"} ({areaAmount} {productLocation.unitType}
-          {areaAmount === 1 ? "" : "s"})
-        </div>
+      {/* Display Order Amount and Increment / Decrement Buttons */}
+      <div className="grid grid-cols-[1fr,_min-content] items-center">
+        <OrderAmount product={productLocation} areaAmount={areaAmount} />
         <div className="flex gap-6">
           <button
             className="w-12 p-1 h-min border-indigo-600 bg-zinc-950 border-[1px] font-bold text-xl"
@@ -98,6 +115,42 @@ const ItemForm = ({ order, productLocation, productAmounts = [] }: Props) => {
     </div>
   );
 };
+
+function ProductDescription({
+  product,
+  highlight,
+}: {
+  product: ProductLocation;
+  highlight?: boolean;
+}) {
+  const dynamicStyles = highlight ? "text-white" : "text-zinc-400";
+
+  return (
+    <div className={"text-lg font-bold " + dynamicStyles}>
+      {product.displayName} {product.unitType}s {product.size}
+      {product.unitOfMeasurement} <br />
+    </div>
+  );
+}
+
+function OrderAmount({
+  areaAmount,
+  product: { packageQuantity, packageType, unitType },
+}: {
+  areaAmount: number;
+  product: ProductLocation;
+}) {
+  const packageAmount = areaAmount / packageQuantity;
+  const dynamicStyles = areaAmount > 0 ? "text-lime-300" : "text-indigo-300";
+
+  return (
+    <div className={"font-bold " + dynamicStyles}>
+      {packageAmount} {packageType}
+      {packageAmount === 1 ? "" : "s"} ({areaAmount} {unitType}
+      {areaAmount === 1 ? "" : "s"})
+    </div>
+  );
+}
 
 export default ItemForm;
 

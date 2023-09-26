@@ -1,7 +1,15 @@
+import { z } from "zod";
+import { useQuery } from "react-query";
 import { detailFactory, keys, listFactory } from "api/querieFactory";
 import { useMutation } from "./useMutation";
-import { OrderDetail, OrderList, createOrderApi, setProductAmountApi } from "api/orders";
-import { z } from "zod";
+import {
+  OrderDetail,
+  OrderHistory,
+  OrderList,
+  createOrderApi,
+  getOrderHistoryApi,
+  setProductAmountApi,
+} from "api/orders";
 
 const RESOURCE = "orders" as const;
 
@@ -79,4 +87,16 @@ export const useSetProductAmount = (venueId: string, orderId: string) => {
   );
 
   return { mutate };
+};
+
+export const useOrderHistory = (venueId: string, dates: Date[], orderId: string) => {
+  const key = [...keys.all(venueId, RESOURCE), "history", dates] as const;
+  const { data, status } = useQuery(
+    key,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async ({ queryKey: [venueId, _orders, _history, dates] }) =>
+      await getOrderHistoryApi({ venueId, dates, orderId })
+  );
+
+  return { data: (data || []) as OrderHistory[], status };
 };

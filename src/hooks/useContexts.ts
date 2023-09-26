@@ -1,6 +1,7 @@
 import { useContext } from "react";
 import venueContext from "ctx/VenueContext";
 import productsContext from "ctx/ProductsContext";
+import orderHistoryContext from "ctx/OrderHistoryContext";
 
 const factory = <T>(context: React.Context<T>) => {
   return () => {
@@ -12,3 +13,4 @@ const factory = <T>(context: React.Context<T>) => {
 
 export const useVenueContext = factory(venueContext);
 export const useProductsContext = factory(productsContext);
+export const useOrderHistoryContext = factory(orderHistoryContext);
