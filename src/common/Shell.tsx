@@ -20,10 +20,10 @@ const Shell = ({ children }: Props) => {
 
   return (
     <div
-      className="grid grid-cols-1 grid-rows-[minmax(0,_1fr),_3rem]"
+      className="grid grid-cols-1 grid-rows-[minmax(0,_1fr),_3rem] w-full"
       style={{ height: viewHeight + "px" }}
     >
-      <div className="overflow-y-auto overflow-x-auto p-3">{children}</div>
+      <div className="h-full w-full">{children}</div>
       <NavBarShell />
     </div>
   );
