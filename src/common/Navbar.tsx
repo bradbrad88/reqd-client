@@ -91,56 +91,38 @@ const SettingsItem = ({ to, display }: SettingsItemProps) => {
 const NavBarShell = () => {
   return (
     <Routes>
+      <Route path="*" element={<NavBarInstance to="/" display="Orders" />} />
       <Route
-        path="*"
-        element={
-          <NavBar
-            right={
-              <Link to="/">
-                <div className="text-white">Orders</div>
-              </Link>
-            }
-          />
-        }
+        path=":orderId/:editOrvendorId"
+        element={<NavBarInstance to="../" display="Order" />}
       />
       <Route
         path="settings/products/*"
-        element={
-          <NavBar
-            right={
-              <Link to="/settings/products">
-                <div className="text-white">Products</div>
-              </Link>
-            }
-          />
-        }
+        element={<NavBarInstance to="/settings/products" display="Products" />}
       />
       <Route
         path="settings/vendors/*"
-        element={
-          <NavBar
-            right={
-              <Link to="/settings/vendors">
-                <div className="text-white">Vendors</div>
-              </Link>
-            }
-          />
-        }
+        element={<NavBarInstance to="/settings/vendors" display="Vendors" />}
       />
       <Route
         path="settings/areas/*"
-        element={
-          <NavBar
-            right={
-              <Link to="/settings/areas">
-                <div className="text-white">Areas</div>
-              </Link>
-            }
-          />
-        }
+        element={<NavBarInstance to="/settings/areas" display="Areas" />}
       />
     </Routes>
   );
 };
 
 export default NavBarShell;
+
+// Convenience function for rendering NavBar with default Left and Middle elements and formatting text of Right element
+function NavBarInstance({ display, to }: { display: string; to: string }) {
+  return (
+    <NavBar
+      right={
+        <Link to={to}>
+          <div className="text-white">{display}</div>
+        </Link>
+      }
+    />
+  );
+}
