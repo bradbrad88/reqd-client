@@ -4,6 +4,8 @@ import ListItem from "common/ListItem";
 import { useNavigate } from "react-router-dom";
 import { useVenueContext } from "src/hooks/useContexts";
 import { useCreateOrder, useOrderList } from "src/hooks/useOrders";
+import type { OrderList as OrderListType } from "api/orders";
+import { getStartOfToday, getStartOfWeek } from "src/utils/dates";
 
 const OrderList = () => {
   const { venueId } = useVenueContext();
@@ -16,12 +18,67 @@ const OrderList = () => {
   };
 
   const renderOrders = () => {
-    if (!orders) return null;
-    return orders.map(order => (
-      <ListItem key={order.id}>
-        <Order {...order} />
-      </ListItem>
-    ));
+    const breakdownInit = {
+      today: [] as OrderListType[number][],
+      thisWeek: [] as OrderListType[number][],
+      previous: [] as OrderListType[number][],
+    };
+
+    const today = getStartOfToday();
+    const week = getStartOfWeek();
+
+    const breakdown = orders.reduce((breakdown, order) => {
+      const date = new Date(order.createdAt);
+
+      if (date.getTime() > today.getTime()) {
+        breakdown.today.push(order);
+        return breakdown;
+      }
+      if (date.getTime() > week.getTime()) {
+        breakdown.thisWeek.push(order);
+        return breakdown;
+      }
+      breakdown.previous.push(order);
+
+      return breakdown;
+    }, breakdownInit);
+
+    function renderOrderBreakdown(orders: OrderListType) {
+      return orders.map(order => (
+        <ListItem key={order.id}>
+          <Order {...order} />
+        </ListItem>
+      ));
+    }
+
+    return (
+      <>
+        {breakdown.today.length > 0 && (
+          <div>
+            <p className="text-indigo-300">Today</p>
+            <div className="flex flex-col gap-3">{renderOrderBreakdown(breakdown.today)}</div>
+          </div>
+        )}
+        {breakdown.thisWeek.length > 0 && (
+          <div>
+            <p className="text-indigo-300">This Week</p>
+            <div className="flex flex-col gap-3">
+              {renderOrderBreakdown(breakdown.thisWeek)}
+            </div>
+          </div>
+        )}
+        {breakdown.previous.length > 0 && (
+          <div>
+            {(breakdown.today.length > 0 || breakdown.thisWeek.length > 0) && (
+              <p className="text-indigo-300">Earlier</p>
+            )}
+            <div className="flex flex-col gap-3">
+              {renderOrderBreakdown(breakdown.previous)}
+            </div>
+          </div>
+        )}
+      </>
+    );
   };
 
   return (
