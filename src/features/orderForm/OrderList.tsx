@@ -1,11 +1,11 @@
+import { useNavigate } from "react-router-dom";
+import { getStartOfToday, getStartOfWeek } from "src/utils/dates";
+import { useVenueContext } from "src/hooks/useContexts";
+import { useCreateOrder, useOrderList } from "src/hooks/useOrders";
 import CallToAction from "common/CallToAction";
 import FlexList from "common/FlexList";
 import ListItem from "common/ListItem";
-import { useNavigate } from "react-router-dom";
-import { useVenueContext } from "src/hooks/useContexts";
-import { useCreateOrder, useOrderList } from "src/hooks/useOrders";
 import type { OrderList as OrderListType } from "api/orders";
-import { getStartOfToday, getStartOfWeek } from "src/utils/dates";
 
 const OrderList = () => {
   const { venueId } = useVenueContext();
@@ -46,7 +46,7 @@ const OrderList = () => {
     function renderOrderBreakdown(orders: OrderListType) {
       return orders.map(order => (
         <ListItem key={order.id}>
-          <Order {...order} />
+          <Order {...order} showAreasLength={3} />
         </ListItem>
       ));
     }
@@ -116,8 +116,7 @@ function Order({ id, createdAt, areas, showAreasLength = 2 }: OrderProps) {
 
   const renderDate = () => {
     const date = new Date(createdAt);
-    const intl = Intl.DateTimeFormat("en-au", { weekday: "long" }).format(date);
-    return `${intl} ${date.toLocaleDateString()}`;
+    return `${date.toLocaleDateString()}`;
   };
 
   return (
