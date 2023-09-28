@@ -1,9 +1,8 @@
-import { useNavigate } from "react-router-dom";
 import Product from "./Product";
 import Filters from "./ProductFilters";
 import FlexList from "common/FlexList";
-import CallToAction from "common/CallToAction";
 import { useProductsContext } from "../../hooks/useContexts";
+import FixedCallToAction from "common/FixedCallToAction";
 
 type Filters = {
   vendorId: string[];
@@ -13,21 +12,16 @@ type Filters = {
 
 const ProductList = () => {
   const { products } = useProductsContext();
-  const nav = useNavigate();
 
   const renderProducts = () => {
     if (!products) return null;
     return products.map(product => <Product key={product.id} product={product} />);
   };
 
-  const openForm = () => {
-    nav("create");
-  };
-
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 h-full overflow-y-auto overflow-hidden">
       {/* <Filters /> */}
-      <CallToAction action={openForm}>Create</CallToAction>
+      <FixedCallToAction to="create">Create</FixedCallToAction>
       <FlexList>{renderProducts()}</FlexList>
     </div>
   );

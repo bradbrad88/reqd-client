@@ -6,12 +6,7 @@ const Products = () => {
   const { venueId } = useVenueContext();
   return (
     <ProductsProvider venueId={venueId}>
-      <div className="flex flex-col gap-5">
-        <h1>Products</h1>
-        <div className="p-2">
-          <Outlet />
-        </div>
-      </div>
+      <Outlet />
     </ProductsProvider>
   );
 };

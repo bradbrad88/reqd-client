@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
 import type { ProductList } from "api/products";
+import ListItem from "common/ListItem";
 
 type Product = ProductList[number];
 type Props = {
@@ -17,16 +18,15 @@ const Product = ({
   };
 
   return (
-    <div
-      onClick={onNav}
-      className="p-2 px-3 bg-zinc-700 rounded-md border-[1px] border-zinc-600 hover:bg-zinc-600"
-    >
-      <span className="font-bold">{displayName}</span>
-      <span className="italic upp pl-2">
-        {unitType} {size}
-        {unitOfMeasurement}
-      </span>
-    </div>
+    <ListItem>
+      <div onClick={onNav}>
+        <span className="font-bold">{displayName}</span>
+        <span className="italic pl-2">
+          {unitType} {size}
+          {unitOfMeasurement}
+        </span>
+      </div>
+    </ListItem>
   );
 };
 

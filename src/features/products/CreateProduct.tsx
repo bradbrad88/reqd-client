@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useCreateProduct } from "src/hooks/useProducts";
 import { useVendorList } from "src/hooks/useVendors";
 import { useVenueContext } from "src/hooks/useContexts";
@@ -13,9 +12,9 @@ import {
   useUnitTypeList,
 } from "src/hooks/useScalars";
 import DescribeProduct from "./edit/DescribeProduct";
+import BackButton from "common/BackButton";
 
 const CreateProduct = () => {
-  const nav = useNavigate();
   const { venueId } = useVenueContext();
   const { createProduct, status } = useCreateProduct(venueId);
   const { data: vendors } = useVendorList(venueId);
@@ -39,7 +38,6 @@ const CreateProduct = () => {
 
   const onCreate = () => {
     if (!verifyFields()) return;
-    console.log("Creating");
     createProduct(
       {
         displayName,
@@ -145,20 +143,11 @@ const CreateProduct = () => {
     return true;
   }
 
-  const onClose = () => {
-    nav("../", { relative: "path" });
-  };
-
   return (
-    <div className="border-[1px] border-indigo-700 rounded-md shadow-md shadow-black p-2 flex flex-col gap-5">
+    <div className="border-[1px] border-indigo-700 rounded-md shadow-md shadow-black p-2 flex flex-col gap-5 h-full overflow-hidden overflow-y-auto">
       <div className="flex gap-2">
-        <h2 className="text-xl font-bold">Create a new product in your venue</h2>
-        <button
-          className="bg-white text-indigo-700 font-bold text-lg p-1 px-4 max-h-12"
-          onClick={onClose}
-        >
-          Back
-        </button>
+        <BackButton />
+        <h2 className="text-2xl font-bold self-center">Create a Product</h2>
       </div>
       <Form>
         <Field>
