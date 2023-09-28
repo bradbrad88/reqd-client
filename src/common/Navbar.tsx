@@ -119,7 +119,7 @@ function NavBarInstance({ display, to }: { display: string; to: string }) {
   return (
     <NavBar
       right={
-        <Link to={to}>
+        <Link to={to} relative="path">
           <div className="text-white">{display}</div>
         </Link>
       }
