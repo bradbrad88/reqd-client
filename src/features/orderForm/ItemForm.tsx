@@ -95,11 +95,11 @@ const ItemForm = ({
   };
 
   return (
-    <div className="bg-zinc-900 p-2 py-1 rounded-md flex flex-col gap-1">
+    <div className="bg-zinc-950 border-zinc-700 border-[1px] p-2 py-2 rounded-md flex flex-col gap-1">
       <ProductDescription product={productLocation} highlight={areaAmount > 0} />
       {/* Display Sales / Order History Table */}
       <div
-        className="grid"
+        className="grid pb-1"
         style={{
           gridTemplateColumns: `repeat(${dates.length}, minmax(0, 1fr))`,
         }}
@@ -141,7 +141,7 @@ function ProductDescription({
   product: ProductLocation;
   highlight?: boolean;
 }) {
-  const dynamicStyles = highlight ? "text-white" : "text-zinc-400";
+  const dynamicStyles = highlight ? "text-white" : "text-zinc-200 italic";
 
   return (
     <div className={"text-lg font-bold " + dynamicStyles}>

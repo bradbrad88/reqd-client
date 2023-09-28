@@ -38,8 +38,12 @@ const Area = ({ areaId, order, productLocationAreaMap }: Props) => {
 
   return (
     <div>
-      <h1 className="text-3xl text-indigo-500">{area?.areaName}</h1>
-      <FlexList>{renderProducts()}</FlexList>
+      <div className=" pt-3 pb-6 pl-4 bg-gradient-to-b from-zinc-900">
+        <h1 className="font-bold text-5xl text-white">{area.areaName}</h1>
+      </div>
+      <div className="p-3">
+        <FlexList>{renderProducts()}</FlexList>
+      </div>
     </div>
   );
 };
