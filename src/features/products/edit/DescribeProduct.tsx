@@ -1,8 +1,8 @@
-import { ProductDetail } from "api/products";
+import { CreateProduct } from "api/products";
 
 type Props = {
   product: Partial<
-    Pick<ProductDetail, "displayName" | "unitType" | "packageType" | "packageQuantity">
+    Pick<CreateProduct, "displayName" | "unitType" | "packageType" | "packageQuantity">
   >;
 };
 

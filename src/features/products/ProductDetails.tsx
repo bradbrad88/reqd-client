@@ -47,7 +47,14 @@ const ProductDetails = () => {
           Delete
         </button>
       </div>
-      <DescribeProduct product={product} />
+      <DescribeProduct
+        product={{
+          unitType: product.unitType.value,
+          displayName: product.displayName,
+          packageQuantity: product.packageQuantity,
+          packageType: product.packageType.value,
+        }}
+      />
     </div>
   );
 };

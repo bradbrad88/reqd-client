@@ -17,13 +17,16 @@ const EditUnitOfMeasurement = ({ product }: Props) => {
   const { data: unitOfMeasurementList } = useUnitOfMeasurementsList(venueId);
 
   const unitOfMeasurementOptions = unitOfMeasurementList.map(unit => ({
-    display: unit.unitOfMeasurement,
-    value: unit.unitOfMeasurement,
+    display: unit.value,
+    value: unit.value,
   }));
 
   const onSave = (value: string | null) => {
-    if (!value) return;
-    updateProduct({ ...product, update: { unitOfMeasurement: value } });
+    let unitOfMeasurement: { value: string } | null | undefined;
+    if (value === null) unitOfMeasurement = null;
+    if (value) unitOfMeasurement = unitOfMeasurementList.find(um => um.value === value);
+    if (unitOfMeasurement === undefined) return;
+    updateProduct({ ...product, update: { unitOfMeasurement } });
   };
 
   const close = () => {
@@ -41,13 +44,16 @@ const EditUnitOfMeasurement = ({ product }: Props) => {
             id="unitOfMeasurement"
             autoFocus
             options={unitOfMeasurementOptions}
-            selectedOption={product.unitOfMeasurement || null}
+            selectedOption={product.unitOfMeasurement?.value || null}
             setSelectedOption={onSave}
             onBlur={close}
           />
         </div>
       ) : (
-        <DisplayEditable onClick={() => setEditMode(true)} text={product.unitOfMeasurement} />
+        <DisplayEditable
+          onClick={() => setEditMode(true)}
+          text={product.unitOfMeasurement?.value || ""}
+        />
       )}
     </div>
   );

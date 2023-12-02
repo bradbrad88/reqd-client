@@ -1,9 +1,20 @@
-import { PartialBy } from "src/utils/types";
 import axios from "../config/axios";
 import { axiosHandler } from "./axiosHandler";
 
 export type ProductDetail = {
   id: string;
+  venueId: string;
+  vendorId?: string | null;
+  vendorName?: string;
+  displayName: string;
+  unitType: { value: string; plural: string };
+  packageType: { value: string; plural: string };
+  packageQuantity: number;
+  size?: number;
+  unitOfMeasurement?: { value: string };
+};
+
+export type CreateProduct = {
   venueId: string;
   vendorId?: string | null;
   vendorName?: string;
@@ -17,15 +28,13 @@ export type ProductDetail = {
 
 export type ProductList = ProductDetail[];
 
-type CreateProduct = PartialBy<ProductDetail, "id">;
-
 export type UpdateFields = {
   displayName?: string;
-  unitType?: string;
-  packageType?: string;
+  unitType?: { value: string; plural: string };
+  packageType?: { value: string; plural: string };
   packageQuantity?: number;
   size?: number | null;
-  unitOfMeasurement?: string | null;
+  unitOfMeasurement?: { value: string } | null;
 };
 
 const createProduct = async ({
@@ -57,7 +66,11 @@ const updateProduct = async ({
   venueId,
   id,
   update,
-}: ProductDetail & { update: UpdateFields }) => {
+}: {
+  id: string;
+  venueId: string;
+  update: UpdateFields;
+}) => {
   return await axios.put(`/venue/${venueId}/products/${id}`, update);
 };
 

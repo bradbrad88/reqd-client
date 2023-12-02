@@ -22,8 +22,8 @@ const Product = ({
       <div onClick={onNav}>
         <span className="font-bold">{displayName}</span>
         <span className="italic pl-2">
-          {unitType} {size}
-          {unitOfMeasurement}
+          {unitType.value} {size}
+          {unitOfMeasurement?.value}
         </span>
       </div>
     </ListItem>

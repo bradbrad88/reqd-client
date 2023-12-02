@@ -36,11 +36,21 @@ export const useDeleteProduct = (venueId: string) => {
 const ProductsSchema = z.object({
   id: z.string(),
   displayName: z.string(),
-  unitType: z.string(),
-  packageType: z.string(),
+  unitType: z.object({
+    value: z.string(),
+    plural: z.string(),
+  }),
+  packageType: z.object({
+    value: z.string(),
+    plural: z.string(),
+  }),
   packageQuantity: z.number(),
   size: z.number().nullish(),
-  unitOfMeasurement: z.string().nullish(),
+  unitOfMeasurement: z
+    .object({
+      value: z.string(),
+    })
+    .nullish(),
 });
 
 export const useUpdateProductVendor = (venueId: string, productId: string) => {

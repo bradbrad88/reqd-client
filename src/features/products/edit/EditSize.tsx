@@ -45,7 +45,7 @@ const EditSize = ({ product }: Props) => {
           </span>
         </div>
       ) : (
-        <DisplayEditable onClick={() => setEditMode(true)} text={product.size} />
+        <DisplayEditable onClick={() => setEditMode(true)} text={product.size || "-"} />
       )}
     </div>
   );

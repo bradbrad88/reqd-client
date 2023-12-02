@@ -67,16 +67,16 @@ const CreateProduct = () => {
   }));
 
   const unitTypeOptions = unitTypes.map(unit => ({
-    display: unit.unitType,
-    value: unit.unitType,
+    display: unit.value,
+    value: unit.value,
   }));
   const packageTypeOptions = packageTypes.map(unit => ({
-    display: unit.packageType,
-    value: unit.packageType,
+    display: unit.value,
+    value: unit.value,
   }));
   const unitOfMeasurementsOptions = unitOfMeasurements.map(unit => ({
-    display: unit.unitOfMeasurement,
-    value: unit.unitOfMeasurement,
+    display: unit.value,
+    value: unit.value,
   }));
 
   const onVendorChange = (value: string | null) => {

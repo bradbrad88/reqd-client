@@ -25,11 +25,13 @@ const EditUnitType = ({ product }: Props) => {
 
   const onChange = (value: string | null) => {
     if (!value) return;
-    updateProduct({ ...product, update: { unitType: value } });
+    const unitType = unitTypes.find(ut => ut.value === value);
+    if (!unitType) return;
+    updateProduct({ id: product.id, venueId, update: { unitType } });
     setEditMode(false);
   };
 
-  const options = unitTypes.map(unit => ({ value: unit.unitType, display: unit.unitType }));
+  const options = unitTypes.map(unit => ({ value: unit.value, display: unit.value }));
 
   return (
     <div>
@@ -39,12 +41,12 @@ const EditUnitType = ({ product }: Props) => {
           id="unitType"
           autoFocus
           options={options}
-          selectedOption={product.unitType}
+          selectedOption={product.unitType.value}
           setSelectedOption={onChange}
           onBlur={onBlur}
         />
       ) : (
-        <DisplayEditable text={product.unitType} onClick={() => setEditMode(true)} />
+        <DisplayEditable text={product.unitType.value} onClick={() => setEditMode(true)} />
       )}
     </div>
   );
