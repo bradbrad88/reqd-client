@@ -1,23 +1,36 @@
 import { z } from "zod";
-import { detailFactory, keys, listFactory } from "api/querieFactory";
+import { detailFactory, keys } from "api/querieFactory";
 import { useMutation } from "./useMutation";
 import {
   createProductApi,
   deleteProductApi,
+  getProductsApi,
   updateProductApi,
   updateProductVendorApi,
 } from "api/products";
-import type { ProductList, ProductDetail } from "api/products";
+import type { ProductDetail } from "api/products";
+import { useQuery } from "react-query";
 
 type ProductFilters = {
-  vendorId: string | string[] | undefined;
-  areaId: string | string[] | undefined;
+  query?: string;
 };
 
 const RESOURCE = "products" as const;
 
-export const useProductList = listFactory<ProductList, ProductFilters>(RESOURCE);
 export const useProductDetail = detailFactory<ProductDetail>(RESOURCE);
+
+export const useProductList = (filters: ProductFilters, page = 20, pageSize = 20) => {
+  const { data, isLoading } = useQuery(
+    [RESOURCE, filters, pageSize, page] as const,
+    ctx => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [_, filters, pageSize, page] = ctx.queryKey;
+      return getProductsApi({ ...filters }, pageSize, page);
+    },
+    { keepPreviousData: true }
+  );
+  return { products: data?.products || [], count: data?.count || null, isLoading };
+};
 
 export const useCreateProduct = (venueId: string) => {
   const key = keys.all(venueId, RESOURCE);

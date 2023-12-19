@@ -24,6 +24,10 @@ import EditOrder from "features/orderForm/EditOrder";
 import OrderVendorList from "features/orderForm/OrderVendorList";
 import SubmitVendorOrder from "features/orderForm/SubmitVendorOrder";
 
+import InventoryList from "features/inventory/InventoryList";
+import { Inventory } from "./pages/Inventory";
+import ManageInventory from "features/inventory/ManageInventory";
+
 const queryClient = new QueryClient();
 
 function App() {
@@ -59,6 +63,10 @@ function App() {
                     <Route path="" element={<AreaProducts />} />
                     <Route path="add-product" element={<AddProductToArea />} />
                   </Route>
+                </Route>
+                <Route path="inventory" element={<Inventory />}>
+                  <Route path="" element={<InventoryList />} />
+                  <Route path="add" element={<ManageInventory />} />
                 </Route>
               </Route>
             </Routes>

@@ -63,6 +63,7 @@ const Settings = () => {
             <SettingsItem to="products" display="Products" />
             <SettingsItem to="areas" display="Areas" />
             <SettingsItem to="vendors" display="Vendors" />
+            <SettingsItem to="inventory" display="Inventory" />
             <SettingsItem to="" display="General" />
             <SettingsItem to="" display={<div>Profile</div>} />
           </div>
@@ -107,6 +108,10 @@ const NavBarShell = () => {
       <Route
         path="settings/areas/*"
         element={<NavBarInstance to="/settings/areas" display="Areas" />}
+      />
+      <Route
+        path="settings/inventory/*"
+        element={<NavBarInstance to="/settings/inventory" display="Inventory" />}
       />
     </Routes>
   );

@@ -12,6 +12,7 @@ export type ProductDetail = {
   packageQuantity: number;
   size?: number;
   unitOfMeasurement?: { value: string };
+  inInventory: boolean;
 };
 
 export type CreateProduct = {
@@ -82,6 +83,20 @@ const updateProductVendor = async ({
   return await axios.put(`/venue/${venueId}/products/${id}/vendor`, { vendorId });
 };
 
+export type ProductListApiResult = {
+  products: ProductDetail[];
+  count: number;
+  page: number;
+  pageSize: number;
+};
+
+const getProducts = async ({ query }: { query?: string }, pageSize: number, page: number) => {
+  return await axios.get<ProductListApiResult>(`/products`, {
+    params: { page, pageSize, query },
+  });
+};
+
+export const getProductsApi = axiosHandler(getProducts);
 export const createProductApi = axiosHandler(createProduct);
 export const deleteProductApi = axiosHandler(deleteProduct);
 export const updateProductApi = axiosHandler(updateProduct);
