@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import NavBarShell from "./Navbar";
+import HorizontalSplitFitBottomFillTop from "./layouts/HorizontalSplitFitBottomFillTop";
 
 type Props = {
   children?: React.ReactNode;
@@ -19,12 +20,8 @@ const Shell = ({ children }: Props) => {
   }, []);
 
   return (
-    <div
-      className="grid grid-cols-1 grid-rows-[minmax(0,_1fr),_3rem] w-full"
-      style={{ height: viewHeight + "px" }}
-    >
-      <div className="h-full w-full">{children}</div>
-      <NavBarShell />
+    <div style={{ height: viewHeight + "px" }}>
+      <HorizontalSplitFitBottomFillTop top={children} bottom={<NavBarShell />} />
     </div>
   );
 };
