@@ -7,7 +7,13 @@ import { listFactory } from "api/querieFactory";
 import { useMutation, useQueryClient } from "react-query";
 const RESOURCE = "inventory";
 
-export const useInventoryList = listFactory<InventoryList, undefined>(RESOURCE);
+export type InventoryFilters =
+  | {
+      query?: string;
+    }
+  | undefined;
+
+export const useInventoryList = listFactory<InventoryList, InventoryFilters>(RESOURCE);
 
 export const useAddToInventory = () => {
   const client = useQueryClient();
