@@ -15,6 +15,7 @@ export default defineConfig({
       features: src + "/features",
       api: src + "/api",
       config: src + "/config",
+      utils: src + "/utils",
     },
   },
 });
