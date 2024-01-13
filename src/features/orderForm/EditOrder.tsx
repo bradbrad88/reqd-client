@@ -30,7 +30,7 @@ const EditOrder = () => {
   const orderHistoryDates = () => {
     if (!order) return [];
     const currentWeek = new Date(order.createdAt);
-    return createArrayOfLength(orderHistoryLength).map((_, idx) => {
+    return createArrayOfLength(orderHistoryLength).map(idx => {
       const date = new Date(currentWeek);
       date.setDate(date.getDate() - idx * 7);
       return date;

@@ -1,3 +1,7 @@
 export function createArrayOfLength(length: number) {
-  return Array.from(Array(length));
+  const arr = [];
+  for (let i = 0; i < length; i++) {
+    arr.push(i);
+  }
+  return arr;
 }
