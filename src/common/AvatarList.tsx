@@ -33,12 +33,13 @@ function ListItem({ item, onSelect }: ItemProps) {
         onSelect(item.id);
         break;
       case "ArrowDown":
-        console.log("Arrow down");
         e.preventDefault();
         e.stopPropagation();
         onFocusDown();
         break;
       case "ArrowUp":
+        e.preventDefault();
+        e.stopPropagation();
         onFocusUp();
         break;
       default:
