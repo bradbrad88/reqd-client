@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import useKeyboardSaveOrEscape from "src/hooks/useKeyboardSaveOrEscape";
 import useShortcuts from "src/hooks/useShortcuts";
+import { cn } from "utils/cn";
 
 type InputProp = {
   onSave?: () => void;
@@ -8,7 +9,8 @@ type InputProp = {
 } & React.InputHTMLAttributes<HTMLInputElement> &
   React.RefAttributes<HTMLInputElement>;
 
-const commonClasses = "p-2 px-4 rounded-full focus-visible:outline-lime-400";
+const commonClasses =
+  "p-2 px-4 rounded-full focus:outline-none active:outline-none focus:outline-none border-[1px] focus-visibsle:outline-none focus-visible:border-lime-400 focus:ring-0 ring-0";
 
 export const Input = ({
   onSave = () => {},
@@ -32,7 +34,11 @@ export const Input = ({
     <input
       ref={ref}
       {...htmlInputProps}
-      className={commonClasses + " w-full " + htmlInputProps.className}
+      className={cn(
+        commonClasses,
+        "w-full bg-zinc-700 ring-lime-400",
+        htmlInputProps.className
+      )}
     />
   );
 };
