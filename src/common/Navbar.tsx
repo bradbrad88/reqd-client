@@ -24,7 +24,7 @@ const NavBar = ({ left = <Settings />, middle = <Home />, right }: Props) => {
 // Style the 3 sections of the nav bar
 const NavSection = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="grid grid-cols-1 grid-rows-1 items-center border-r-[1px] border-t-[1px] last-of-type:border-r-0 border-zinc-600 h-full text-center">
+    <div className="grid grid-cols-1 grid-rows-1 items-center border-r-[1px] border-t-[1px] last-of-type:border-r-0 border-zinc-600 text-center h-14">
       {children}
     </div>
   );
