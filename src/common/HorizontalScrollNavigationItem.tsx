@@ -1,28 +1,25 @@
-import { MouseEvent, MouseEventHandler } from "react";
+import { Link } from "react-router-dom";
+import { cn } from "utils/cn";
 
 type Props = {
-  href?: string;
-  onClick: (e: MouseEvent) => void;
+  to: string;
   children: React.ReactNode;
   active: boolean;
 };
 
-const HorizontalScrollNavigationItem = ({ href, onClick, children, active }: Props) => {
-  const onClickHandler: MouseEventHandler = e => {
-    e.preventDefault();
-    onClick(e);
-  };
-
-  const style = active ? "text-indigo-300 hover:text-indigo-300" : "text-white";
-
+const HorizontalScrollNavigationItem = ({ to, children, active }: Props) => {
   return (
-    <a
-      className={"snap-start snap-always px-2 visited:text-white " + style}
-      href={href}
-      onClick={onClickHandler}
+    <Link
+      to={to}
+      relative="route"
+      className="snap-start snap-always px-2 text-white visited:text-white hover:text-white"
     >
-      {children}
-    </a>
+      <div className="relative w-min">
+        {children}
+
+        <div className={cn("absolute bg-white h-[2px]", active ? "w-full" : "hidden")}></div>
+      </div>
+    </Link>
   );
 };
 
