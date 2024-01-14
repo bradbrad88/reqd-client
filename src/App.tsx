@@ -1,32 +1,40 @@
-import { QueryClient, QueryClientProvider } from "react-query";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "react-query";
 import { VenueProvider } from "./contexts/VenueContext";
-import Areas from "./pages/Areas";
+
+import Settings from "./pages/Settings";
+
 import Products from "./pages/Products";
-import CreateProduct from "./features/products/CreateProduct";
 import ProductList from "./features/products/ProductList";
+import CreateProduct from "./features/products/CreateProduct";
 import ProductDetails from "features/products/ProductDetails";
+
 import Vendors from "./pages/Vendors";
 import VendorList from "features/vendors/VendorList";
 import VendorDetails from "features/vendors/VendorDetails";
 import CreateVendor from "features/vendors/CreateVendor";
-import CreateArea from "features/areas/CreateArea";
-import AreaList from "features/areas/AreaList";
-import AreaDetails from "features/areas/AreaDetails";
-import AddProductToArea from "features/areas/AddProductToArea";
-import AreaProducts from "features/areas/AreaProducts";
+
 import Orders from "./pages/Orders";
 import OrderList from "features/orderForm/OrderList";
 import OrderDetail from "features/orderForm/OrderDetails";
-import Shell from "common/Shell";
-import Settings from "./pages/Settings";
 import EditOrder from "features/orderForm/EditOrder";
 import OrderVendorList from "features/orderForm/OrderVendorList";
 import SubmitVendorOrder from "features/orderForm/SubmitVendorOrder";
 
-import InventoryList from "features/inventory/InventoryList";
+import Areas from "./pages/Areas";
+import AreaList from "features/areas/AreaList";
+import AreaDetailOutlet from "features/areas/AreaDetailOutlet";
+import AreaDetail from "features/areas/AreaDetail";
+import NewStorageSpace from "features/areas/NewStorageSpace";
+import StorageSpaceOutlet from "features/areas/StorageSpaceOutlet";
+import StorageSpaceFinder from "features/areas/StorageSpaceFinder";
+
 import { Inventory } from "./pages/Inventory";
+import InventoryList from "features/inventory/InventoryList";
 import ManageInventory from "features/inventory/ManageInventory";
+
+import Shell from "common/Shell";
+import CreateArea from "features/areas/CreateArea";
 
 const queryClient = new QueryClient();
 
@@ -57,11 +65,14 @@ function App() {
                   <Route path="create" element={<CreateVendor />} />
                 </Route>
                 <Route path="areas" element={<Areas />}>
-                  <Route path="create" element={<CreateArea />} />
                   <Route path="" element={<AreaList />} />
-                  <Route path=":areaId" element={<AreaDetails />}>
-                    <Route path="" element={<AreaProducts />} />
-                    <Route path="add-product" element={<AddProductToArea />} />
+                  <Route path="create" element={<CreateArea />} />
+                  <Route path=":areaId" element={<AreaDetailOutlet />}>
+                    <Route path="" element={<AreaDetail />} />
+                    <Route path="new-space" element={<NewStorageSpace />} />
+                    <Route path="spaces" element={<StorageSpaceOutlet />}>
+                      <Route path=":storageSpace" element={<StorageSpaceFinder />} />
+                    </Route>
                   </Route>
                 </Route>
                 <Route path="inventory" element={<Inventory />}>

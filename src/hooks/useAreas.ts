@@ -1,14 +1,32 @@
-import { z } from "zod";
-import { detailFactory, listFactory, keys } from "api/querieFactory";
-import { useMutation } from "./useMutation";
+import { detailFactory, listFactory } from "api/querieFactory";
+
 import {
-  addProductToVenueAreaApi,
+  addStorageSpaceApi,
+  addStorageSpotApi,
   createAreaApi,
-  deleteAreaApi,
-  removeProductFromVenueAreaApi,
-  setProductLocationParLevelApi,
+  removeStorageSectionApi,
+  removeStorageShelfApi,
+  removeStorageSpotApi,
+  renameAreaApi,
+  setStorageSectionCountApi,
+  setStorageShelfCountApi,
+  updateStorageSpotApi,
 } from "api/areas";
-import type { AreaList, AreaDetail } from "api/areas";
+import type {
+  AreaList,
+  AreaDetail,
+  SetStorageShelfCountVars,
+  SetStorageSectionCountVars,
+  AddStorageSpotVars,
+  UpdateStorageSpotVars,
+  RemoveStorageSpotVars,
+  RemoveStorageShelfVars,
+  RemoveStorageSectionVars,
+  CreateAreaVars,
+  RenameAreaVars,
+  AddStorageSpaceVars,
+} from "api/areas";
+import { useMutation, useQueryClient } from "react-query";
 
 type AreaFilters = undefined;
 
@@ -17,62 +35,209 @@ const RESOURCE = "areas" as const;
 export const useAreaList = listFactory<AreaList, AreaFilters>(RESOURCE);
 export const useAreaDetail = detailFactory<AreaDetail>(RESOURCE);
 
-const schema = z.object({
-  id: z.string(),
-  areaName: z.string(),
-  products: z
-    .object({ id: z.string(), productId: z.string(), displayName: z.string() })
-    .array(),
-});
-
-export const useCreateArea = (venueId: string) => {
-  const key = keys.all(venueId, RESOURCE);
-  const { mutate } = useMutation(key, createAreaApi);
-  return { mutate };
+export const useCreateArea = () => {
+  const client = useQueryClient();
+  const { isLoading, mutateAsync } = useMutation({
+    mutationFn: async (vars: CreateAreaVars) => {
+      await createAreaApi(vars);
+      return { ...vars };
+    },
+    onSettled: async ctx => {
+      if (!ctx) return;
+      await client.cancelQueries();
+      client.invalidateQueries({ queryKey: [ctx.venueId, "areas"], exact: false });
+    },
+  });
+  return { createArea: mutateAsync, isLoading };
 };
 
-export const useDeleteArea = (venueId: string) => {
-  const key = keys.all(venueId, RESOURCE);
-  const { mutate } = useMutation(key, deleteAreaApi);
-  return { deleteArea: mutate };
-};
-
-export const useAddProductToArea = (venueId: string, areaId: string) => {
-  const key = keys.detail(venueId, RESOURCE, areaId);
-  const { mutate } = useMutation(key, addProductToVenueAreaApi);
-  return { mutate };
-};
-
-export const useRemoveProductFromArea = (venueId: string, areaId: string) => {
-  const key = keys.detail(venueId, RESOURCE, areaId);
-  const { mutate } = useMutation(
-    key,
-    removeProductFromVenueAreaApi,
-    (previous, vars): z.infer<typeof schema> => {
-      const data = schema.parse(previous);
-      if (!data) throw new Error("Can't remove product from an area that no longer exists");
-      return {
-        ...data,
-        products: data.products.filter(product => product.id !== vars.productLocation),
-      };
-    }
-  );
-  return { removeProduct: mutate };
-};
-
-export const useSetProductLocationParLevel = (venueId: string, areaId: string) => {
-  const key = keys.detail(venueId, RESOURCE, areaId);
-  const { mutate } = useMutation(
-    key,
-    setProductLocationParLevelApi,
-    (previous, vars): AreaDetail => {
-      const newLocations = vars.products.map(product => {
-        if (product.id !== vars.productLocationId) return product;
-        return { ...product, parLevel: vars.parLevel };
+export const useRenameArea = () => {
+  const client = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: async (vars: RenameAreaVars) => {
+      await renameAreaApi(vars);
+      return { ...vars };
+    },
+    onMutate: async vars => {
+      await client.cancelQueries();
+      const key = [vars.venueId, "areas", "detail", vars.areaId];
+      const previousArea = client.getQueryData(key);
+      if (!previousArea) return;
+      client.setQueryData(key, { ...previousArea, areaName: vars.areaName });
+    },
+    onSettled: async ctx => {
+      if (!ctx) return;
+      await client.cancelQueries();
+      client.invalidateQueries({
+        queryKey: [ctx.venueId, "areas", "detail", ctx.areaId],
+        exact: true,
       });
-      return { id: vars.id, areaName: vars.areaName, products: newLocations };
-    }
-  );
+    },
+  });
+  return {
+    renameArea: mutate,
+  };
+};
 
-  return { setParLevel: mutate };
+export const useAddStorageSpace = () => {
+  const client = useQueryClient();
+  const { mutateAsync, isLoading } = useMutation({
+    mutationFn: async (vars: AddStorageSpaceVars) => {
+      await addStorageSpaceApi(vars);
+      return { ...vars };
+    },
+
+    onSettled: async ctx => {
+      await client.cancelQueries();
+      client.invalidateQueries({
+        queryKey: [ctx?.venueId, "areas", "detail", ctx?.areaId],
+        exact: false,
+      });
+    },
+  });
+
+  return { addStorageSpace: mutateAsync, isLoading };
+};
+
+export const useSetStorageSectionCount = () => {
+  const client = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: async (vars: SetStorageSectionCountVars) => {
+      await setStorageSectionCountApi(vars);
+      return { ...vars };
+    },
+    onMutate: async () => {
+      await client.cancelQueries();
+    },
+    onSettled: async ctx => {
+      if (!ctx) return;
+      client.invalidateQueries({
+        queryKey: [ctx.venueId, "areas", "detail", ctx.areaId],
+        exact: false,
+      });
+    },
+  });
+
+  return { setSectionCount: mutate };
+};
+
+export const useSetStorageShelfCount = () => {
+  const client = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: async (vars: SetStorageShelfCountVars) => {
+      await setStorageShelfCountApi(vars);
+      return { ...vars };
+    },
+    onMutate: async () => {
+      await client.cancelQueries();
+    },
+    onSettled: async ctx => {
+      if (!ctx) return;
+      client.invalidateQueries([ctx.venueId, "areas", "detail", ctx.areaId]);
+    },
+  });
+
+  return {
+    setShelfCount: mutate,
+  };
+};
+
+export const useAddStorageSpot = () => {
+  const client = useQueryClient();
+  const { mutateAsync } = useMutation({
+    mutationFn: async (vars: AddStorageSpotVars) => {
+      await addStorageSpotApi(vars);
+      return { ...vars };
+    },
+    onMutate: async () => {
+      await client.cancelQueries();
+    },
+    onSettled: async ctx => {
+      if (!ctx) return;
+      client.invalidateQueries([ctx.venueId, "areas", "detail", ctx.areaId]);
+    },
+  });
+  return {
+    addSpot: mutateAsync,
+  };
+};
+
+export const useUpdateStorageSpot = () => {
+  const client = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: async (vars: UpdateStorageSpotVars) => {
+      await updateStorageSpotApi(vars);
+      return { ...vars };
+    },
+    onMutate: async () => {
+      await client.cancelQueries();
+    },
+    onSettled: async ctx => {
+      if (!ctx) return;
+      client.invalidateQueries([ctx.venueId, "areas", "detail", ctx.areaId]);
+    },
+  });
+  return {
+    updateSpot: mutate,
+  };
+};
+
+export const useRemoveSpot = () => {
+  const client = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: async (vars: RemoveStorageSpotVars) => {
+      await removeStorageSpotApi(vars);
+      return { ...vars };
+    },
+    onMutate: async () => {
+      await client.cancelQueries();
+    },
+    onSettled: async ctx => {
+      if (!ctx) return;
+      client.invalidateQueries([ctx.venueId, "areas", "detail", ctx.areaId]);
+    },
+  });
+  return {
+    removeSpot: mutate,
+  };
+};
+
+export const useRemoveShelf = () => {
+  const client = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: async (vars: RemoveStorageShelfVars) => {
+      await removeStorageShelfApi(vars);
+      return { ...vars };
+    },
+    onMutate: async () => {
+      await client.cancelQueries();
+    },
+    onSettled: async ctx => {
+      if (!ctx) return;
+      client.invalidateQueries([ctx.venueId, "areas", "detail", ctx.areaId]);
+    },
+  });
+  return {
+    removeShelf: mutate,
+  };
+};
+
+export const useRemoveSection = () => {
+  const client = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: async (vars: RemoveStorageSectionVars) => {
+      await removeStorageSectionApi(vars);
+      return { ...vars };
+    },
+    onMutate: async () => {
+      await client.cancelQueries();
+    },
+    onSettled: async ctx => {
+      if (!ctx) return;
+      client.invalidateQueries([ctx.venueId, "areas", "detail", ctx.areaId]);
+    },
+  });
+  return {
+    removeSection: mutate,
+  };
 };

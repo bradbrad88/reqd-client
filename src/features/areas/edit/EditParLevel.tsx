@@ -1,57 +1,85 @@
-import { useState } from "react";
-import { useOutletContext } from "react-router-dom";
-import { ProductLocation } from "api/areas";
-import { useVenueContext } from "src/hooks/useContexts";
-import { useSetProductLocationParLevel } from "src/hooks/useAreas";
-import DisplayEditable from "features/products/edit/DisplayEditable";
-import { Input } from "common/Inputs";
-import type { AreaOutletContext } from "../AreaProducts";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "common/Form";
+import Input from "common/Input";
+import Button from "common/Button";
+import Slideover from "common/Slideover";
+import { useEffect } from "react";
 
-const EditParLevel = ({ productLocation }: { productLocation: ProductLocation }) => {
-  const { venueId } = useVenueContext();
-  const { areaDetail } = useOutletContext<AreaOutletContext>();
-  const { setParLevel } = useSetProductLocationParLevel(venueId, areaDetail.id);
-  const [editMode, setEditMode] = useState(false);
-  const [parLevel, setParLevelState] = useState<number | null>(null);
-  const onChange: React.ChangeEventHandler<HTMLInputElement> = event => {
-    const num = Number(event.target.value);
-    if (isNaN(num)) return setParLevelState(null);
-    setParLevelState(num);
+type Props = {
+  open: boolean;
+  onParLevelChange: (parLevel: number) => void;
+  close: () => void;
+  parLevel: number;
+};
+
+const formSchema = z.object({
+  parLevel: z.number().int().gte(0),
+});
+
+const EditParLevel = ({ open, close, onParLevelChange, parLevel }: Props) => {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+  });
+  useEffect(() => {
+    form.resetField("parLevel", { defaultValue: parLevel });
+    form.reset({ parLevel });
+  }, [parLevel, form]);
+
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    onParLevelChange(values.parLevel);
+    onClose();
   };
 
-  const onSave = () => {
-    console.log(parLevel);
-    setParLevel({ ...areaDetail, venueId, productLocationId: productLocation.id, parLevel });
-  };
-
-  const close = () => {
-    setTimeout(() => {
-      setEditMode(false);
-    }, 0);
+  const onClose = () => {
+    close();
   };
 
   return (
-    <div className="-my-2">
-      {editMode ? (
-        <div className="relative">
-          <Input
-            onSave={onSave}
-            close={close}
-            className="bg-transparent appearance-none"
-            autoFocus
-            onChange={onChange}
-            value={parLevel || ""}
-            type="number"
-            onBlur={close}
+    <Slideover
+      open={open}
+      title="How many items would you usually stock here?"
+      closeButton={false}
+      setOpen={close}
+    >
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="relative flex flex-col gap-5">
+          <FormField
+            control={form.control}
+            name="parLevel"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Par Level</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    value={String(field.value)}
+                    onChange={e => {
+                      const num = Number(e.target.value);
+                      if (isNaN(num)) return field.onChange(e);
+                      return field.onChange(num);
+                    }}
+                    placeholder="par level..."
+                    type="number"
+                    autoFocus
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-      ) : (
-        <DisplayEditable
-          onClick={() => setEditMode(true)}
-          text={productLocation.parLevel || ""}
-        />
-      )}
-    </div>
+          <div className="flex justify-between">
+            <Button onClick={onClose} variant={"outline"} type="button">
+              Cancel
+            </Button>
+            <Button type="submit" variant={"default"}>
+              Update
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </Slideover>
   );
 };
 

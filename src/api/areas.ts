@@ -117,10 +117,18 @@ export type RemoveStorageSpaceVars = {
   areaId: string;
 } & StorageSpaceLocation;
 
-const createArea = async ({ venueId, areaName }: { venueId: string; areaName: string }) => {
+export type CreateAreaVars = { venueId: string; areaName: string };
+
+const createArea = async ({ venueId, areaName }: CreateAreaVars) => {
   return await axios.post<{ id: string; areaName: string }>(`/venue/${venueId}/areas`, {
     areaName,
   });
+};
+
+export type RenameAreaVars = { venueId: string; areaId: string; areaName: string };
+
+const renameArea = async ({ venueId, areaId, areaName }: RenameAreaVars) => {
+  return await axios.patch(`/venue/${venueId}/areas/${areaId}`, { areaName });
 };
 
 const deleteArea = async ({ venueId, areaId }: { venueId: string; areaId: string }) => {
@@ -212,6 +220,7 @@ const removeStorageSpace = async ({
 };
 
 export const createAreaApi = axiosHandler(createArea);
+export const renameAreaApi = axiosHandler(renameArea);
 export const deleteAreaApi = axiosHandler(deleteArea);
 export const addStorageSpaceApi = axiosHandler(addStorageSpace);
 export const setStorageSectionCountApi = axiosHandler(setStorageSectionCount);
