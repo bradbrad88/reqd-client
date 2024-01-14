@@ -22,11 +22,11 @@ const DisplayEditable = ({ text, onClick }: Props) => {
     <div
       ref={ref}
       onClick={onClick}
-      className="flex gap-2 bg-zinc-700 rounded-lg p-2 px-3 cursor-pointer"
+      className="flex gap-2 bg-zinc-700 rounded-lg p-2 px-3 cursor-pointer "
       tabIndex={0}
       onKeyDown={onKeyDown}
     >
-      <div className="font-bold">{text}</div>
+      <div className="font-bold h-5">{text}</div>
     </div>
   );
 };

@@ -4,7 +4,7 @@ import { useVenueContext } from "src/hooks/useContexts";
 import { useUpdateProduct } from "src/hooks/useProducts";
 import { useUnitOfMeasurementsList } from "src/hooks/useScalars";
 import { Combo } from "common/Inputs";
-import DisplayEditable from "./DisplayEditable";
+import DisplayEditable from "common/DisplayEditable";
 
 type Props = {
   product: ProductDetail;

@@ -1,10 +1,10 @@
-import { ProductDetail } from "api/products";
-import { Combo } from "common/Inputs";
 import { useState } from "react";
+import { ProductDetail } from "api/products";
 import { useVenueContext } from "src/hooks/useContexts";
 import { useUpdateProduct } from "src/hooks/useProducts";
 import { usePackaageTypeList } from "src/hooks/useScalars";
-import DisplayEditable from "./DisplayEditable";
+import { Combo } from "common/Inputs";
+import DisplayEditable from "common/DisplayEditable";
 
 type Props = {
   product: ProductDetail;

@@ -1,9 +1,9 @@
-import { ProductDetail } from "api/products";
-import { Input } from "common/Inputs";
 import { useCallback, useState } from "react";
+import { ProductDetail } from "api/products";
 import { useVenueContext } from "src/hooks/useContexts";
 import { useUpdateProduct } from "src/hooks/useProducts";
-import DisplayEditable from "./DisplayEditable";
+import { Input } from "common/Inputs";
+import DisplayEditable from "common/DisplayEditable";
 
 type Props = {
   product: ProductDetail;
