@@ -4,6 +4,7 @@ import {
   addStorageSpaceApi,
   addStorageSpotApi,
   createAreaApi,
+  deleteAreaApi,
   removeStorageSectionApi,
   removeStorageShelfApi,
   removeStorageSpotApi,
@@ -25,6 +26,7 @@ import type {
   CreateAreaVars,
   RenameAreaVars,
   AddStorageSpaceVars,
+  DeleteAreaVars,
 } from "api/areas";
 import { useMutation, useQueryClient } from "react-query";
 
@@ -65,11 +67,11 @@ export const useRenameArea = () => {
       if (!previousArea) return;
       client.setQueryData(key, { ...previousArea, areaName: vars.areaName });
     },
-    onSettled: async ctx => {
-      if (!ctx) return;
+    onSettled: async vars => {
+      if (!vars) return;
       await client.cancelQueries();
       client.invalidateQueries({
-        queryKey: [ctx.venueId, "areas", "detail", ctx.areaId],
+        queryKey: [vars.venueId, "areas", "detail", vars.areaId],
         exact: true,
       });
     },
@@ -77,6 +79,24 @@ export const useRenameArea = () => {
   return {
     renameArea: mutate,
   };
+};
+
+export const useDeleteArea = () => {
+  const client = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: async (vars: DeleteAreaVars) => {
+      await deleteAreaApi(vars);
+      return { ...vars };
+    },
+    onMutate: async vars => {
+      await client.cancelQueries();
+      client.setQueryData([vars.venueId, "areas", "detail", vars.areaId], undefined);
+      const areaList = client.getQueryData([vars.venueId, "areas", "list", null]) as AreaList;
+      const filteredList = areaList.filter(area => area.id !== vars.areaId);
+      client.setQueryData([vars.venueId, "areas", "list", null], filteredList);
+    },
+  });
+  return { deleteArea: mutate };
 };
 
 export const useAddStorageSpace = () => {
