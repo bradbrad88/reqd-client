@@ -3,24 +3,20 @@ import { useVenueContext } from "src/hooks/useContexts";
 import { useSetStorageShelfCount } from "src/hooks/useAreas";
 import StorageShelf from "./StorageShelf";
 
-import type { StorageSection as StorageSectionType } from "api/areas";
+import type { StorageSection as StorageSectionType, StorageSpace } from "api/areas";
 
 const StorageSection = ({
   section,
-  position,
   storageSpace,
 }: {
-  storageSpace: string;
+  storageSpace: StorageSpace;
   section: StorageSectionType;
-  position: number;
 }) => {
   const renderShelves = () => {
-    return section.shelves.map((shelf, idx) => (
+    return section.shelfLayout.map(shelf => (
       <StorageShelf
-        key={`section-${position}-shelf-${idx}`}
-        shelf={shelf}
-        position={idx}
-        section={position}
+        key={shelf}
+        shelf={storageSpace.shelves[shelf]}
         storageSpace={storageSpace}
       />
     ));
@@ -30,11 +26,7 @@ const StorageSection = ({
     <div className="relative w-fit text-sm m-4">
       <div className="border-[1px] border-zinc-600 shadow-black shadow-md rounded-lg p-6 flex flex-col gap-6 bg-zinc-950">
         {renderShelves()}
-        <AddShelf
-          storageSpace={storageSpace}
-          section={position}
-          shelfCount={section.shelves.length}
-        />
+        <AddShelf storageSpace={storageSpace} section={section} />
       </div>
     </div>
   );
@@ -43,11 +35,9 @@ const StorageSection = ({
 const AddShelf = ({
   storageSpace,
   section,
-  shelfCount,
 }: {
-  storageSpace: string;
-  section: number;
-  shelfCount: number;
+  storageSpace: StorageSpace;
+  section: StorageSectionType;
 }) => {
   const { areaId } = useParams<{ areaId: string }>();
   const { venueId } = useVenueContext();
@@ -57,14 +47,14 @@ const AddShelf = ({
     setShelfCount({
       areaId: areaId!,
       venueId,
-      section,
-      shelfCount: shelfCount + 1,
-      storageSpace,
+      storageSpace: storageSpace.storageName,
+      sectionId: section.id,
+      count: section.shelfLayout.length + 1,
     });
   };
 
   return (
-    <button onClick={onClick} className="border-lime-300">
+    <button onClick={onClick} className="border-lime-600 border-dashed border-2">
       + Shelf
     </button>
   );

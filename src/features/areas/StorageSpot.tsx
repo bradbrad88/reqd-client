@@ -1,5 +1,5 @@
 import { MouseEventHandler } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useOutletContext, useParams, useSearchParams } from "react-router-dom";
 import { cn } from "utils/cn";
 import { createArrayOfLength } from "utils/arrays";
 import { useVenueContext } from "src/hooks/useContexts";
@@ -7,33 +7,34 @@ import { useUpdateStorageSpot } from "src/hooks/useAreas";
 import StorageSpotSlot from "./StorageSpotSlot";
 import Button from "common/Button";
 
-import type { StorageSpot as StorageSpotType, UpdateSpot } from "api/areas";
+import type {
+  AreaDetail,
+  AreaProduct,
+  StorageSpace as StorageSpaceType,
+  StorageSpot as StorageSpotType,
+  UpdateSpot,
+} from "api/areas";
 
 const StorageSpot = ({
   spot,
   storageSpace,
-  section,
-  shelf,
-  position,
 }: {
   spot: StorageSpotType;
-  storageSpace: string;
-  section: number;
-  shelf: number;
-  position: number;
+  storageSpace: StorageSpaceType;
 }) => {
   const { venueId } = useVenueContext();
   const { areaId } = useParams<{ areaId: string }>();
+  const { area } = useOutletContext<{ area: AreaDetail }>();
   const { updateSpot } = useUpdateStorageSpot();
+  const productLine = area.productLines[spot.productLine] || null;
+  const product = (area.products[productLine?.productId || ""] || null) as AreaProduct | null;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setParams] = useSearchParams();
 
   const onEditingProduct = () => {
     setParams(params => {
       params.set("editProduct", "true");
-      params.set("activeSection", String(section));
-      params.set("activeShelf", String(shelf));
-      params.set("activeSpot", String(position));
+      params.set("activeSpot", spot.id);
       return params;
     });
   };
@@ -41,10 +42,8 @@ const StorageSpot = ({
   const onEditingParLevel = () => {
     setParams(params => {
       params.set("editParLevel", "true");
-      params.set("activeSection", String(section));
-      params.set("activeShelf", String(shelf));
-      params.set("activeSpot", String(position));
-      params.set("activeParLevel", String(spot.parLevel));
+      params.set("activeSpot", spot.id);
+      params.set("activeParLevel", String(productLine.parLevel));
       return params;
     });
   };
@@ -53,33 +52,31 @@ const StorageSpot = ({
     updateSpot({
       venueId,
       areaId: areaId!,
-      storageSpace,
-      section,
-      shelf,
-      spot: position,
+      storageSpace: storageSpace.storageName,
+      spotId: spot.id,
       update,
     });
   };
 
   const onAddColumn: MouseEventHandler = e => {
     e.stopPropagation();
-    handleSpotUpdate({ columnSpan: spot.columnSpan + 1 });
+    handleSpotUpdate({ columnWidth: spot.columnWidth + 1 });
   };
 
   const onRemoveColumn: MouseEventHandler = e => {
     e.stopPropagation();
-    handleSpotUpdate({ columnSpan: spot.columnSpan - 1 });
+    handleSpotUpdate({ columnWidth: spot.columnWidth - 1 });
   };
 
   const renderColumns = () => {
-    return createArrayOfLength(spot.columnSpan).map(idx => {
+    return createArrayOfLength(spot.columnWidth).map(idx => {
       const originalColumn = idx === 0;
-      const finalColumn = idx === spot.columnSpan - 1;
+      const finalColumn = idx === spot.columnWidth - 1;
       return (
         <StorageSpotSlot key={idx}>
           <div
             className={cn(
-              "relative border-[1px] border-zinc-200 rounded-lg gap-3 w-full h-full bg-white bg-opacity-10 p-2",
+              "relative border-[1px] border-zinc-200 rounded-lg gap-3 w-full h-full bg-white bg-opacity-10 overflow-hidden",
               originalColumn ? "border-white" : "border-zinc-400"
             )}
           >
@@ -87,29 +84,33 @@ const StorageSpot = ({
               onClick={onEditingProduct}
               className={cn("h-full w-full", !originalColumn && "opacity-50")}
             >
-              {spot.product?.image ? (
-                <img
-                  className={cn(
-                    "h-full w-full block whitespace-normal",
-                    !originalColumn && "opacity-50"
-                  )}
-                  src={spot.product?.image}
-                  alt={spot.product?.displayName}
-                />
-              ) : (
-                <div className="whitespace-normal">
+              {product ? (
+                <div
+                  style={{ backgroundImage: product.image }}
+                  className="h-full w-full bg-gradient-to-t from-transparent to-black/40 from-40% to-80%  p-2 "
+                >
                   <p
                     className={cn(
                       "whitespace-normal leading-tight",
                       !originalColumn && "opacity-50"
                     )}
                   >
-                    {spot.product?.displayName}
+                    {product ? (
+                      product.displayName
+                    ) : (
+                      <span className="text-zinc-300 italic text-center">
+                        Choose a product
+                      </span>
+                    )}
                   </p>
                   <p className="italic leading-none mt-1 text-zinc-400 text-sm">
-                    {spot.product?.size}
-                    {spot.product?.unitOfMeasurement?.value} {spot.product?.unitType.plural}
+                    {product.size}
+                    {product.unitOfMeasurement?.value} {product.unitType.plural}
                   </p>
+                </div>
+              ) : (
+                <div className="flex h-full w-full whitespace-normal items-center  text-center text-zinc-200 italic">
+                  Choose a product
                 </div>
               )}
             </div>
@@ -119,14 +120,14 @@ const StorageSpot = ({
               {/* Par Level feature */}
               {originalColumn && (
                 <Button
-                  className="h-full bg-zinc-800 px-1 rounded-lg rounded-br-none rounded-tl-none"
+                  className="h-full border-[1px] border-zinc-500 bg-zinc-800 px-1 rounded-lg rounded-br-none rounded-tl-none"
                   onClick={onEditingParLevel}
                 >
                   <span className="min-w-[2rem] max-w-[4rem] truncate">
-                    {spot.parLevel == null
+                    {productLine?.parLevel == null
                       ? "Par"
-                      : `${spot.parLevel}${
-                          spot.product ? " " + spot.product.unitType.plural : ""
+                      : `${productLine?.parLevel}${
+                          product ? " " + product.unitType.plural : ""
                         }`}
                   </span>
                 </Button>

@@ -1,48 +1,54 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useVenueContext } from "src/hooks/useContexts";
-import { useSetStorageSectionCount, useUpdateStorageSpot } from "src/hooks/useAreas";
+import {
+  useEditProductLine,
+  useSetProductLine,
+  useSetStorageSectionCount,
+} from "src/hooks/useAreas";
 import StorageSection from "./StorageSection";
 import EditParLevel from "./edit/EditParLevel";
 import EditSpotProduct from "./edit/EditSpotProduct";
 
-import type { StorageSpace as StorageSpaceType, UpdateSpot } from "api/areas";
+import type {
+  AreaDetail,
+  StorageSpace as StorageSpaceType,
+  UpdateProductLine,
+} from "api/areas";
 
 type Props = {
   space: StorageSpaceType;
+  area: AreaDetail;
 };
 
 const StorageSpace = ({ space }: Props) => {
   const { venueId } = useVenueContext();
   const { areaId } = useParams<{ areaId: string }>();
   const [params, setParams] = useSearchParams();
-  const { updateSpot } = useUpdateStorageSpot();
-
+  const { setProductLine } = useSetProductLine();
+  const { editProductLine } = useEditProductLine();
   const editingProduct = params.get("editProduct") === "true";
   const editingParLevel = params.get("editParLevel") === "true";
 
-  const handleSpotUpdate = (update: UpdateSpot) => {
-    const section = Number(params.get("activeSection"));
-    const shelf = Number(params.get("activeShelf"));
-    const spot = Number(params.get("activeSpot"));
-    updateSpot({
-      venueId,
-      areaId: areaId!,
-      storageSpace: space.storageName,
-      section,
-      shelf,
-      spot,
-      update,
-    });
+  const handleProductLineUpdate = (update: UpdateProductLine) => {
+    const spotId = params.get("activeSpot");
+    if (!spotId) return;
+    const spot = space.spots[spotId];
+    if (!spot) return;
+    if (spot.productLine) {
+      editProductLine({ venueId, areaId: areaId!, productLine: spot.productLine, update });
+    } else {
+      setProductLine({
+        venueId,
+        areaId: areaId!,
+        location: { storageSpace: space.storageName, spotId },
+        productLine: update,
+      });
+    }
   };
 
   const renderSections = () => {
-    return space.sections.map((section, idx) => (
-      <StorageSection
-        key={`section-${idx}`}
-        section={section}
-        position={idx}
-        storageSpace={space.storageName}
-      />
+    return space.sectionLayout.map(section => (
+      <StorageSection key={section} section={space.sections[section]} storageSpace={space} />
     ));
   };
 
@@ -61,12 +67,12 @@ const StorageSpace = ({ space }: Props) => {
   };
 
   const onProductChange = (productId: string | null) => {
-    handleSpotUpdate({ productId });
+    handleProductLineUpdate({ productId });
     onSlideoversClose();
   };
 
   const onParLevelChange = (parLevel: number | null) => {
-    handleSpotUpdate({ parLevel });
+    handleProductLineUpdate({ parLevel });
     onSlideoversClose();
   };
 
@@ -75,7 +81,7 @@ const StorageSpace = ({ space }: Props) => {
       <div className="h-full overflow-auto">
         <div className="grid gap-4 whitespace-nowrap grid-rows-1 grid-flow-col pb-4 pt-2">
           {renderSections()}
-          <AddSection storageSpace={space.storageName} sectionCount={space.sections.length} />
+          <AddSection storageSpace={space} />
         </div>
       </div>
       <EditParLevel
@@ -93,26 +99,21 @@ const StorageSpace = ({ space }: Props) => {
   );
 };
 
-const AddSection = ({
-  storageSpace,
-  sectionCount,
-}: {
-  storageSpace: string;
-  sectionCount: number;
-}) => {
+const AddSection = ({ storageSpace }: { storageSpace: StorageSpaceType }) => {
   const { areaId } = useParams<{ areaId: string }>();
   const { venueId } = useVenueContext();
   const { setSectionCount } = useSetStorageSectionCount();
+
   const onClick = () => {
     setSectionCount({
       venueId,
       areaId: areaId!,
-      storageSpace,
-      sectionCount: sectionCount + 1,
+      storageSpace: storageSpace.storageName,
+      count: storageSpace.sectionLayout.length + 1,
     });
   };
   return (
-    <button onClick={onClick} className="border-lime-300 max-h-[4rem]">
+    <button onClick={onClick} className="border-lime-600 border-dashed w-72 m-4 ml-0">
       + Section
     </button>
   );

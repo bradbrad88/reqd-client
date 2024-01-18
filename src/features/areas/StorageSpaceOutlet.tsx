@@ -1,39 +1,35 @@
 import { useEffect } from "react";
-import { Outlet, useNavigate, useParams } from "react-router-dom";
-import { useAreaDetail } from "src/hooks/useAreas";
-import { useVenueContext } from "src/hooks/useContexts";
+import { Outlet, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import HorizontalSplitFitBottomFillTop from "common/layouts/HorizontalSplitFitBottomFillTop";
 import HorizontalScrollNavigation from "common/HorizontalScrollNavigation";
 import HorizontalScrollNavigationItem from "common/HorizontalScrollNavigationItem";
-import Spinner from "common/Spinner";
+
+import { AreaDetail } from "api/areas";
 
 const StorageSpaceOutlet = () => {
-  const { venueId } = useVenueContext();
-  const { areaId, storageSpace } = useParams<{ areaId: string; storageSpace: string }>();
-  const { data, status } = useAreaDetail(areaId!, venueId);
+  // const { venueId } = useVenueContext();
+  const { storageSpace } = useParams<{ areaId: string; storageSpace: string }>();
+  // const { data, status } = useAreaDetail(areaId!, venueId);
   const nav = useNavigate();
+  const {
+    area,
+    area: { storageSpaces, storageSpaceLayout },
+  } = useOutletContext<{ area: AreaDetail }>();
 
   useEffect(() => {
-    if (!data) return;
     if (storageSpace) return;
-    if (!data.storageSpaces[0]) return;
-    nav(`view/${data.storageSpaces[0].storageName}`);
-  }, [data, nav, storageSpace]);
+    if (!storageSpaces[0]) return;
+    nav(`view/${storageSpaces[0].storageName}`);
+  }, [nav, storageSpace, storageSpaces]);
 
   const renderSections = () => {
-    if (!data) return null;
-    return data.storageSpaces.map(space => (
-      <StorageSpaceNavItem
-        key={space.storageName}
-        storageName={space.storageName}
-        to={space.storageName}
-      />
+    return storageSpaceLayout.map(space => (
+      <StorageSpaceNavItem key={space} storageName={space} to={space} />
     ));
   };
 
-  if (status === "error") return <div>An error occurred retrieving data from the server</div>;
-  if (status === "loading") return <Spinner />;
-  if (!data) return null;
+  // if (status === "error") return <div>An error occurred retrieving data from the server</div>;
+  // if (status === "loading") return <Spinner />;
 
   const renderStorageSpaceNavigation = () => {
     return (
@@ -45,7 +41,7 @@ const StorageSpaceOutlet = () => {
 
   return (
     <HorizontalSplitFitBottomFillTop
-      top={<Outlet context={{ storageSpaces: data.storageSpaces }} />}
+      top={<Outlet context={{ area }} />}
       bottom={renderStorageSpaceNavigation()}
     />
   );

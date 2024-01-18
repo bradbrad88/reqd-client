@@ -19,17 +19,15 @@ const AreaDetail = () => {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const renderStorageSpaces = () =>
-    area.storageSpaces.map(space => (
-      <Link key={space.storageName} to={`spaces/${space.storageName}`} className="text-white">
-        <ListItem>{space.storageName}</ListItem>
+    area.storageSpaceLayout.map(space => (
+      <Link key={space} to={`spaces/${space}`} className="text-white">
+        <ListItem>{space}</ListItem>
       </Link>
     ));
 
   const onDelete = () => {
     deleteArea({ venueId, areaId: area.id });
     nav("../", { relative: "path" });
-    // setTimeout(() => {
-    // }, 0);Z
   };
 
   return (

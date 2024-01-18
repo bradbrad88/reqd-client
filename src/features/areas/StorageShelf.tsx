@@ -5,31 +5,20 @@ import { useAddStorageSpot } from "src/hooks/useAreas";
 import StorageSpotSlot from "./StorageSpotSlot";
 import StorageSpot from "./StorageSpot";
 
-import type { StorageShelf as StorageShelfType } from "api/areas";
+import type { StorageShelf as StorageShelfType, StorageSpace } from "api/areas";
 
 const StorageShelf = ({
   shelf,
-  position,
-  section,
   storageSpace,
 }: {
   shelf: StorageShelfType;
-  storageSpace: string;
-  section: number;
-  position: number;
+  storageSpace: StorageSpace;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   const renderSpots = () => {
-    return shelf.spots.map((spot, idx) => (
-      <StorageSpot
-        key={`section-${section}-shelf-${shelf}-spot-${idx}`}
-        spot={{ ...spot }}
-        section={section}
-        shelf={position}
-        position={idx}
-        storageSpace={storageSpace}
-      />
+    return shelf.spotLayout.map(spot => (
+      <StorageSpot key={spot} spot={storageSpace.spots[spot]} storageSpace={storageSpace} />
     ));
   };
 
@@ -39,32 +28,36 @@ const StorageShelf = ({
       className="flex relative bg-white bg-opacity-10 border-[1px] border-zinc-600 rounded-lg gap-6 p-6 shadow-black shadow-md mt-auto"
     >
       {renderSpots()}
-      <AddSpot storageSpace={storageSpace} section={section} shelf={position} />
+      <AddSpot storageSpace={storageSpace} shelf={shelf} />
     </div>
   );
 };
 
 const AddSpot = ({
-  section,
   shelf,
   storageSpace,
 }: {
-  shelf: number;
-  section: number;
-  storageSpace: string;
+  storageSpace: StorageSpace;
+  shelf: StorageShelfType;
 }) => {
   const { areaId } = useParams<{ areaId: string }>();
   const { venueId } = useVenueContext();
   const { addSpot } = useAddStorageSpot();
 
   const onClick = () => {
-    addSpot({ venueId, areaId: areaId!, storageSpace, section, shelf, spot: {} });
+    addSpot({
+      venueId,
+      areaId: areaId!,
+      storageSpace: storageSpace.storageName,
+      shelfId: shelf.id,
+      count: shelf.spotLayout.length + 1,
+    });
   };
 
   return (
     <StorageSpotSlot>
       <button
-        className="border-lime-300 focus-within:border-lime-300 w-full h-full"
+        className="border-lime-300 focus-within:border-lime-600 border-dashed w-full h-full"
         onClick={onClick}
       >
         + Spot

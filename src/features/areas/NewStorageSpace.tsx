@@ -6,11 +6,13 @@ import { useVenueContext } from "src/hooks/useContexts";
 import { useAddStorageSpace } from "src/hooks/useAreas";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "common/Form";
 import Input from "common/Input";
+import RadioGroupCards from "common/RadioGroupCards";
 import Button from "common/Button";
 import Spinner from "common/Spinner";
 
 const formSchema = z.object({
   storageSpace: z.string().min(3),
+  layoutType: z.union([z.literal("list"), z.literal("layout")]),
 });
 
 const NewStorageSpace = () => {
@@ -20,9 +22,27 @@ const NewStorageSpace = () => {
   const { addStorageSpace, isLoading } = useAddStorageSpace();
   const nav = useNavigate();
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    await addStorageSpace({ venueId, areaId: areaId!, storageSpace: values.storageSpace });
+    await addStorageSpace({
+      venueId,
+      areaId: areaId!,
+      ...values,
+    });
     nav(`../spaces/${values.storageSpace}`);
   };
+
+  const options = [
+    {
+      id: "list",
+      title: "List",
+      description: "A simple list. Reorder items easily",
+    },
+    {
+      id: "layout",
+      title: "Layout",
+      description:
+        "Use this when products belong in a specific spot, such as a display fridge",
+    },
+  ];
 
   return (
     <Form {...form}>
@@ -38,6 +58,20 @@ const NewStorageSpace = () => {
                 <Input {...field} />
               </FormControl>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          name="layoutType"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormControl>
+                <RadioGroupCards
+                  options={options}
+                  onSelectionChange={field.onChange}
+                ></RadioGroupCards>
+              </FormControl>
             </FormItem>
           )}
         />

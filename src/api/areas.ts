@@ -2,9 +2,9 @@ import axios from "../config/axios";
 import { axiosHandler } from "./axiosHandler";
 
 export type StorageSpaceLocation = { storageSpace: string };
-export type StorageSectionLocation = StorageSpaceLocation & { section: number };
-export type StorageShelfLocation = StorageSectionLocation & { shelf: number };
-export type StorageSpotLocation = StorageShelfLocation & { spot: number };
+export type StorageSectionLocation = StorageSpaceLocation & { sectionId: string };
+export type StorageShelfLocation = StorageSpaceLocation & { shelfId: string };
+export type StorageSpotLocation = StorageSpaceLocation & { spotId: string };
 
 export type AreaList = {
   id: string;
@@ -14,118 +14,166 @@ export type AreaList = {
 export type AreaDetail = {
   id: string;
   areaName: string;
-  storageSpaces: StorageSpace[];
+  storageSpaces: StorageSpaceMap;
+  storageSpaceLayout: string[];
+  currentIdSequence: string;
+  products: AreaProductMap;
+  productLines: ProductLineMap;
 };
+
+export type StorageSpaceMap = Record<string, StorageSpace>;
 
 export type StorageSpace = {
   storageName: string;
-  sections: StorageSection[];
+  sections: StorageSectionMap;
+  shelves: StorageShelfMap;
+  spots: StorageSpotMap;
+  sectionLayout: string[];
+  currentIdSequence: string;
 };
 
+export type StorageSectionMap = Record<string, StorageSection>;
+export type StorageShelfMap = Record<string, StorageShelf>;
+export type StorageSpotMap = Record<string, StorageSpot>;
+export type AreaProductMap = Record<string, AreaProduct>;
+export type ProductLineMap = Record<string, ProductLine>;
+
 export type StorageSection = {
-  position: number;
-  shelves: StorageShelf[];
+  id: string;
+  shelfLayout: string[];
 };
 
 export type StorageShelf = {
-  position: number;
-  spots: StorageSpot[];
+  id: string;
+  spotLayout: string[];
+};
+
+export type AreaProduct = {
+  productId: string;
+  displayName: string;
+  size?: number;
+  image: string;
+  unitOfMeasurement?: { value: string };
+  unitType: { value: string; plural: string };
 };
 
 export type StorageSpot = {
-  position: number;
-  parLevel: number;
-  productId: string | null;
-  columnSpan: number;
-  product?: {
-    productId: string;
-    displayName: string;
-    size?: number;
-    image: string;
-    unitOfMeasurement?: { value: string };
-    unitType: { value: string; plural: string };
-  };
+  id: string;
+  productLine: string;
+  stackHeight: number;
+  columnWidth: number;
 };
 
-export type AddStorageSpaceVars = {
+export type ProductLine = {
+  id: string;
+  productId: string | null;
+  parLevel: number | null;
+};
+
+// API Variables
+export type CreateAreaVars = {
   venueId: string;
-  areaId: string;
-  storageSpace: string;
+  areaName: string;
+  layoutType: "list" | "layout";
 };
 
 export type RenameAreaVars = { venueId: string; areaId: string; areaName: string };
 
 export type DeleteAreaVars = { venueId: string; areaId: string };
 
-export type SetStorageSectionCountVars = {
+export type AddStorageSpaceVars = {
   venueId: string;
   areaId: string;
   storageSpace: string;
-  sectionCount: number;
+  layoutType: "list" | "layout";
 };
-
-export type SetStorageShelfCountVars = {
-  venueId: string;
-  areaId: string;
-  storageSpace: string;
-  section: number;
-  shelfCount: number;
-};
-
-export type AddStorageSpotVars = {
-  venueId: string;
-  areaId: string;
-  storageSpace: string;
-  section: number;
-  shelf: number;
-  spot: {
-    productId?: string;
-    parLevel?: number;
-    columnSpan?: number;
-  };
-};
-
-export type UpdateSpot = {
-  parLevel?: number | null;
-  columnSpan?: number;
-  productId?: string | null;
-};
-
-export type UpdateStorageSpotVars = {
-  venueId: string;
-  areaId: string;
-  storageSpace: string;
-  section: number;
-  shelf: number;
-  spot: number;
-  update: UpdateSpot;
-};
-
-export type RemoveStorageSpotVars = {
-  venueId: string;
-  areaId: string;
-} & StorageSpotLocation;
-
-export type RemoveStorageShelfVars = {
-  venueId: string;
-  areaId: string;
-} & StorageShelfLocation;
-
-export type RemoveStorageSectionVars = {
-  venueId: string;
-  areaId: string;
-} & StorageSectionLocation;
 
 export type RemoveStorageSpaceVars = {
   venueId: string;
   areaId: string;
 } & StorageSpaceLocation;
 
-export type CreateAreaVars = { venueId: string; areaName: string };
+export type SetProductLineVars = {
+  venueId: string;
+  areaId: string;
+  productLine: UpdateProductLine;
+  location: ProductLineLocation;
+};
 
-const createArea = async ({ venueId, areaName }: CreateAreaVars) => {
+export type UpdateProductLine = { parLevel?: number | null; productId?: string | null };
+
+type ProductLineLocation =
+  | { storageSpace: string; index: number }
+  | { storageSpace: string; spotId: string };
+
+export type EditProductLineVars = {
+  venueId: string;
+  areaId: string;
+  productLine: string;
+  update: UpdateProductLine;
+};
+
+export type RemoveProductLineVars = {
+  venueId: string;
+  areaId: string;
+  location: ProductLineLocation;
+};
+
+export type SetStorageSectionCountVars = {
+  venueId: string;
+  areaId: string;
+  storageSpace: string;
+  count: number;
+};
+
+export type SetStorageShelfCountVars = {
+  venueId: string;
+  areaId: string;
+  storageSpace: string;
+  sectionId: string;
+  count: number;
+};
+
+export type SetStorageSpotCountVars = {
+  venueId: string;
+  areaId: string;
+  storageSpace: string;
+  shelfId: string;
+  count: number;
+};
+
+export type UpdateSpot = {
+  columnWidth?: number;
+  stackHeight?: number;
+};
+
+export type UpdateStorageSpotVars = {
+  venueId: string;
+  areaId: string;
+  storageSpace: string;
+  spotId: string;
+  update: UpdateSpot;
+};
+
+export type RemoveStorageSectionVars = {
+  venueId: string;
+  areaId: string;
+} & StorageSectionLocation;
+
+export type RemoveStorageShelfVars = {
+  venueId: string;
+  areaId: string;
+} & StorageShelfLocation;
+
+export type RemoveStorageSpotVars = {
+  venueId: string;
+  areaId: string;
+} & StorageSpotLocation;
+
+const createArea = async ({ venueId, areaName, layoutType }: CreateAreaVars) => {
   return await axios.post<{ id: string; areaName: string }>(`/venue/${venueId}/areas`, {
     areaName,
+    layoutType,
   });
 };
 
@@ -137,80 +185,13 @@ const deleteArea = async ({ venueId, areaId }: DeleteAreaVars) => {
   return await axios.delete(`/venue/${venueId}/areas/${areaId}`);
 };
 
-const addStorageSpace = async ({ areaId, storageSpace, venueId }: AddStorageSpaceVars) => {
-  return await axios.post(`/venue/${venueId}/areas/${areaId}`, { storageSpace });
-};
-
-const setStorageSectionCount = async ({
-  venueId,
-  areaId,
-  sectionCount,
-  storageSpace,
-}: SetStorageSectionCountVars) => {
-  return await axios.put(`/venue/${venueId}/areas/${areaId}/section-count`, {
-    storageSpace,
-    sectionCount,
-  });
-};
-
-const setStorageShelfCount = async ({
-  venueId,
+const addStorageSpace = async ({
   areaId,
   storageSpace,
-  section,
-  shelfCount,
-}: SetStorageShelfCountVars) => {
-  return await axios.put(`/venue/${venueId}/areas/${areaId}/shelf-count`, {
-    storageSpace,
-    section,
-    shelfCount,
-  });
-};
-
-const addStorageSpot = async ({
   venueId,
-  areaId,
-  storageSpace,
-  section,
-  shelf,
-  spot,
-}: AddStorageSpotVars) => {
-  return await axios.post(`/venue/${venueId}/areas/${areaId}/spot`, {
-    storageSpace,
-    section,
-    shelf,
-    spot,
-  });
-};
-
-const updateStorageSpot = async ({
-  venueId,
-  areaId,
-  storageSpace,
-  section,
-  shelf,
-  spot,
-  update,
-}: UpdateStorageSpotVars) => {
-  return await axios.put(`/venue/${venueId}/areas/${areaId}/spot`, {
-    storageSpace,
-    section,
-    shelf,
-    spot,
-    update,
-  });
-};
-
-const removeSpot = async ({ venueId, areaId, ...location }: RemoveStorageSpotVars) => {
-  return await axios.put(`/venue/${venueId}/areas/${areaId}/remove-spot`, { ...location });
-};
-
-const removeShelf = async ({ venueId, areaId, ...location }: RemoveStorageShelfVars) => {
-  return await axios.put(`/venue/${venueId}/areas/${areaId}/remove-shelf`, { ...location });
-};
-
-const removeSection = async ({ venueId, areaId, ...location }: RemoveStorageSectionVars) => {
-  return await axios.put(`/venue/${venueId}/areas/${areaId}/remove-section`, { ...location });
+  layoutType,
+}: AddStorageSpaceVars) => {
+  return await axios.post(`/venue/${venueId}/areas/${areaId}`, { storageSpace, layoutType });
 };
 
 const removeStorageSpace = async ({
@@ -221,15 +202,114 @@ const removeStorageSpace = async ({
   return await axios.put(`/venue/${venueId}/areas/${areaId}/remove-section`, { ...location });
 };
 
+const setProductLine = async ({
+  venueId,
+  areaId,
+  location,
+  productLine,
+}: SetProductLineVars) => {
+  return await axios.put(`/venue/${venueId}/areas/${areaId}/set-product-line`, {
+    location,
+    productLine,
+  });
+};
+
+const editProductLine = async ({
+  venueId,
+  areaId,
+  productLine,
+  update,
+}: EditProductLineVars) => {
+  return await axios.put(`/venue/${venueId}/areas/${areaId}/edit-product-line`, {
+    productLine,
+    update,
+  });
+};
+
+const removeProductLine = async ({ venueId, areaId, location }: RemoveProductLineVars) => {
+  return await axios.put(`/venue/${venueId}/areas/${areaId}/remove-product-line`, {
+    location,
+  });
+};
+
+const setStorageSectionCount = async ({
+  venueId,
+  areaId,
+  count,
+  storageSpace,
+}: SetStorageSectionCountVars) => {
+  return await axios.put(`/venue/${venueId}/areas/${areaId}/section-count`, {
+    storageSpace,
+    count,
+  });
+};
+
+const setStorageShelfCount = async ({
+  venueId,
+  areaId,
+  storageSpace,
+  sectionId,
+  count,
+}: SetStorageShelfCountVars) => {
+  return await axios.put(`/venue/${venueId}/areas/${areaId}/shelf-count`, {
+    storageSpace,
+    sectionId,
+    count,
+  });
+};
+
+const setStorageSpotCount = async ({
+  venueId,
+  areaId,
+  storageSpace,
+  shelfId,
+  count,
+}: SetStorageSpotCountVars) => {
+  return await axios.post(`/venue/${venueId}/areas/${areaId}/spot`, {
+    storageSpace,
+    shelfId,
+    count,
+  });
+};
+
+const updateStorageSpot = async ({
+  venueId,
+  areaId,
+  storageSpace,
+  spotId,
+  update,
+}: UpdateStorageSpotVars) => {
+  return await axios.put(`/venue/${venueId}/areas/${areaId}/spot`, {
+    storageSpace,
+    spotId,
+    update,
+  });
+};
+
+const removeSection = async ({ venueId, areaId, ...location }: RemoveStorageSectionVars) => {
+  return await axios.put(`/venue/${venueId}/areas/${areaId}/remove-section`, { ...location });
+};
+
+const removeShelf = async ({ venueId, areaId, ...location }: RemoveStorageShelfVars) => {
+  return await axios.put(`/venue/${venueId}/areas/${areaId}/remove-shelf`, { ...location });
+};
+
+const removeSpot = async ({ venueId, areaId, ...location }: RemoveStorageSpotVars) => {
+  return await axios.put(`/venue/${venueId}/areas/${areaId}/remove-spot`, { ...location });
+};
+
 export const createAreaApi = axiosHandler(createArea);
 export const renameAreaApi = axiosHandler(renameArea);
 export const deleteAreaApi = axiosHandler(deleteArea);
 export const addStorageSpaceApi = axiosHandler(addStorageSpace);
+export const removeStorageSpaceApi = axiosHandler(removeStorageSpace);
+export const setProductLineApi = axiosHandler(setProductLine);
+export const editProductLineApi = axiosHandler(editProductLine);
+export const removeProductLineApi = axiosHandler(removeProductLine);
 export const setStorageSectionCountApi = axiosHandler(setStorageSectionCount);
 export const setStorageShelfCountApi = axiosHandler(setStorageShelfCount);
-export const addStorageSpotApi = axiosHandler(addStorageSpot);
+export const addStorageSpotApi = axiosHandler(setStorageSpotCount);
 export const updateStorageSpotApi = axiosHandler(updateStorageSpot);
 export const removeStorageSpotApi = axiosHandler(removeSpot);
 export const removeStorageShelfApi = axiosHandler(removeShelf);
 export const removeStorageSectionApi = axiosHandler(removeSection);
-export const removeStorageSpaceApi = axiosHandler(removeStorageSpace);

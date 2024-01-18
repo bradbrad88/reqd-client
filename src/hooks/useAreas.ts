@@ -5,10 +5,13 @@ import {
   addStorageSpotApi,
   createAreaApi,
   deleteAreaApi,
+  editProductLineApi,
+  removeProductLineApi,
   removeStorageSectionApi,
   removeStorageShelfApi,
   removeStorageSpotApi,
   renameAreaApi,
+  setProductLineApi,
   setStorageSectionCountApi,
   setStorageShelfCountApi,
   updateStorageSpotApi,
@@ -18,7 +21,7 @@ import type {
   AreaDetail,
   SetStorageShelfCountVars,
   SetStorageSectionCountVars,
-  AddStorageSpotVars,
+  SetStorageSpotCountVars,
   UpdateStorageSpotVars,
   RemoveStorageSpotVars,
   RemoveStorageShelfVars,
@@ -27,6 +30,9 @@ import type {
   RenameAreaVars,
   AddStorageSpaceVars,
   DeleteAreaVars,
+  SetProductLineVars,
+  EditProductLineVars,
+  RemoveProductLineVars,
 } from "api/areas";
 import { useMutation, useQueryClient } from "react-query";
 
@@ -119,6 +125,66 @@ export const useAddStorageSpace = () => {
   return { addStorageSpace: mutateAsync, isLoading };
 };
 
+export const useSetProductLine = () => {
+  const client = useQueryClient();
+  const { mutate, isLoading } = useMutation({
+    mutationFn: async (vars: SetProductLineVars) => {
+      await setProductLineApi(vars);
+      return { ...vars };
+    },
+    onSettled: async ctx => {
+      if (!ctx) return;
+      await client.cancelQueries();
+      client.invalidateQueries({
+        queryKey: [ctx.venueId, "areas", "detail", ctx.areaId],
+        exact: false,
+      });
+    },
+  });
+
+  return { setProductLine: mutate, isLoading };
+};
+
+export const useEditProductLine = () => {
+  const client = useQueryClient();
+  const { mutate, isLoading } = useMutation({
+    mutationFn: async (vars: EditProductLineVars) => {
+      await editProductLineApi(vars);
+      return { ...vars };
+    },
+    onSettled: async ctx => {
+      if (!ctx) return;
+      await client.cancelQueries();
+      client.invalidateQueries({
+        queryKey: [ctx.venueId, "areas", "detail", ctx.areaId],
+        exact: false,
+      });
+    },
+  });
+
+  return { editProductLine: mutate, isLoading };
+};
+
+export const useRemoveProductLine = () => {
+  const client = useQueryClient();
+  const { mutate, isLoading } = useMutation({
+    mutationFn: async (vars: RemoveProductLineVars) => {
+      await removeProductLineApi(vars);
+      return { ...vars };
+    },
+    onSettled: async ctx => {
+      if (!ctx) return;
+      await client.cancelQueries();
+      client.invalidateQueries({
+        queryKey: [ctx.venueId, "areas", "detail", ctx.areaId],
+        exact: false,
+      });
+    },
+  });
+
+  return { removeProductLine: mutate, isLoading };
+};
+
 export const useSetStorageSectionCount = () => {
   const client = useQueryClient();
   const { mutate } = useMutation({
@@ -165,7 +231,7 @@ export const useSetStorageShelfCount = () => {
 export const useAddStorageSpot = () => {
   const client = useQueryClient();
   const { mutateAsync } = useMutation({
-    mutationFn: async (vars: AddStorageSpotVars) => {
+    mutationFn: async (vars: SetStorageSpotCountVars) => {
       await addStorageSpotApi(vars);
       return { ...vars };
     },
