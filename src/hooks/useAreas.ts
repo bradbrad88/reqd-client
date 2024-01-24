@@ -2,7 +2,7 @@ import { detailFactory, listFactory } from "api/querieFactory";
 
 import {
   addStorageSpaceApi,
-  addStorageSpotApi,
+  setStorageSpotCountApi,
   createAreaApi,
   deleteAreaApi,
   editProductLineApi,
@@ -15,6 +15,7 @@ import {
   setStorageSectionCountApi,
   setStorageShelfCountApi,
   updateStorageSpotApi,
+  moveSpotApi,
 } from "api/areas";
 import type {
   AreaList,
@@ -33,6 +34,7 @@ import type {
   SetProductLineVars,
   EditProductLineVars,
   RemoveProductLineVars,
+  MoveSpotVars,
 } from "api/areas";
 import { useMutation, useQueryClient } from "react-query";
 
@@ -232,7 +234,7 @@ export const useAddStorageSpot = () => {
   const client = useQueryClient();
   const { mutateAsync } = useMutation({
     mutationFn: async (vars: SetStorageSpotCountVars) => {
-      await addStorageSpotApi(vars);
+      await setStorageSpotCountApi(vars);
       return { ...vars };
     },
     onMutate: async () => {
@@ -246,6 +248,21 @@ export const useAddStorageSpot = () => {
   return {
     addSpot: mutateAsync,
   };
+};
+
+export const useMoveStorageSpot = () => {
+  const client = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: async (vars: MoveSpotVars) => {
+      await moveSpotApi(vars);
+      return { ...vars };
+    },
+    onSettled: async ctx => {
+      if (!ctx) return;
+      client.invalidateQueries([ctx.venueId, "areas", "detail", ctx.areaId]);
+    },
+  });
+  return { moveSpot: mutate };
 };
 
 export const useUpdateStorageSpot = () => {

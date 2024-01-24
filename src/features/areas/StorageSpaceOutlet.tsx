@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { Outlet, useNavigate, useOutletContext, useParams } from "react-router-dom";
+import { Outlet, useNavigate, useParams } from "react-router-dom";
 import HorizontalSplitFitBottomFillTop from "common/layouts/HorizontalSplitFitBottomFillTop";
 import HorizontalScrollNavigation from "common/HorizontalScrollNavigation";
 import HorizontalScrollNavigationItem from "common/HorizontalScrollNavigationItem";
 
-import { AreaDetail } from "api/areas";
+import { useAreaContext } from "src/hooks/useContexts";
 
 const StorageSpaceOutlet = () => {
   // const { venueId } = useVenueContext();
@@ -12,9 +12,12 @@ const StorageSpaceOutlet = () => {
   // const { data, status } = useAreaDetail(areaId!, venueId);
   const nav = useNavigate();
   const {
-    area,
     area: { storageSpaces, storageSpaceLayout },
-  } = useOutletContext<{ area: AreaDetail }>();
+  } = useAreaContext();
+  // const {
+  //   area,
+  //   area: { storageSpaces, storageSpaceLayout },
+  // } = useOutletContext<{ area: AreaDetail }>();
 
   useEffect(() => {
     if (storageSpace) return;
@@ -41,7 +44,7 @@ const StorageSpaceOutlet = () => {
 
   return (
     <HorizontalSplitFitBottomFillTop
-      top={<Outlet context={{ area }} />}
+      top={<Outlet />}
       bottom={renderStorageSpaceNavigation()}
     />
   );

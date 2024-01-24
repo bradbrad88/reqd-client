@@ -1,14 +1,15 @@
-import { MouseEventHandler } from "react";
-import { useOutletContext, useParams, useSearchParams } from "react-router-dom";
+import { ComponentType, MouseEventHandler } from "react";
+import { useSearchParams } from "react-router-dom";
 import { cn } from "utils/cn";
 import { createArrayOfLength } from "utils/arrays";
-import { useVenueContext } from "src/hooks/useContexts";
+import { useAreaContext, useVenueContext } from "src/hooks/useContexts";
 import { useUpdateStorageSpot } from "src/hooks/useAreas";
-import StorageSpotSlot from "./StorageSpotSlot";
 import Button from "common/Button";
+import DragIcon from "common/icons/Drag";
+import StorageSpotSlot from "./StorageSpotSlot";
+import "./storageSpot.css";
 
 import type {
-  AreaDetail,
   AreaProduct,
   StorageSpace as StorageSpaceType,
   StorageSpot as StorageSpotType,
@@ -18,16 +19,21 @@ import type {
 const StorageSpot = ({
   spot,
   storageSpace,
+  Handle,
+  isDragging = false,
 }: {
   spot: StorageSpotType;
   storageSpace: StorageSpaceType;
+  Handle: ComponentType<{ children: React.ReactNode }>;
+  isDragging?: boolean;
 }) => {
   const { venueId } = useVenueContext();
-  const { areaId } = useParams<{ areaId: string }>();
-  const { area } = useOutletContext<{ area: AreaDetail }>();
+  const {
+    area: { id: areaId, productLines, products },
+  } = useAreaContext();
   const { updateSpot } = useUpdateStorageSpot();
-  const productLine = area.productLines[spot.productLine] || null;
-  const product = (area.products[productLine?.productId || ""] || null) as AreaProduct | null;
+  const productLine = productLines[spot.productLine] || null;
+  const product = (products[productLine?.productId || ""] || null) as AreaProduct | null;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setParams] = useSearchParams();
 
@@ -74,45 +80,16 @@ const StorageSpot = ({
       const finalColumn = idx === spot.columnWidth - 1;
       return (
         <StorageSpotSlot key={idx}>
-          <div
-            className={cn(
-              "relative border-[1px] border-zinc-200 rounded-lg gap-3 w-full h-full bg-white bg-opacity-10 overflow-hidden",
-              originalColumn ? "border-white" : "border-zinc-400"
-            )}
-          >
+          <div className={cn("relative gap-3 w-full h-full", isDragging && "dragging")}>
             <div
-              onClick={onEditingProduct}
-              className={cn("h-full w-full", !originalColumn && "opacity-50")}
+              className={cn("h-full w-full", originalColumn ? "opacity-100" : "opacity-40")}
+              onClick={originalColumn ? onEditingProduct : () => {}}
             >
-              {product ? (
-                <div
-                  style={{ backgroundImage: product.image }}
-                  className="h-full w-full bg-gradient-to-t from-transparent to-black/40 from-40% to-80%  p-2 "
-                >
-                  <p
-                    className={cn(
-                      "whitespace-normal leading-tight",
-                      !originalColumn && "opacity-50"
-                    )}
-                  >
-                    {product ? (
-                      product.displayName
-                    ) : (
-                      <span className="text-zinc-300 italic text-center">
-                        Choose a product
-                      </span>
-                    )}
-                  </p>
-                  <p className="italic leading-none mt-1 text-zinc-400 text-sm">
-                    {product.size}
-                    {product.unitOfMeasurement?.value} {product.unitType.plural}
-                  </p>
-                </div>
-              ) : (
-                <div className="flex h-full w-full whitespace-normal items-center  text-center text-zinc-200 italic">
-                  Choose a product
-                </div>
-              )}
+              <ProductSpotPresentation
+                product={product}
+                Handle={originalColumn ? Handle : null}
+                isDragging={isDragging}
+              />
             </div>
 
             {/* Button panel */}
@@ -156,9 +133,66 @@ const StorageSpot = ({
       );
     });
   };
-  const columns = renderColumns();
 
-  return columns;
+  return <div className="flex text-sm gap-3">{renderColumns()}</div>;
 };
+
+type PresentationProps = {
+  product: AreaProduct | null;
+  Handle: React.ComponentType<{ children: React.ReactNode }> | null;
+  isDragging: boolean;
+};
+
+function ProductSpotPresentation({ product, Handle, isDragging = false }: PresentationProps) {
+  return (
+    <div
+      className={cn(
+        "h-full w-full border-[1px] rounded-lg overflow-hidden bg-zinc-800",
+        isDragging ? "border-white" : "border-zinc-400"
+      )}
+    >
+      {product ? (
+        <div
+          style={{ backgroundImage: product.image }}
+          className="h-full w-full bg-gradient-to-t from-transparent to-black/40 from-40% to-80%  p-2"
+        >
+          <div className="flex">
+            <p className="whitespace-normal leading-tight">{product.displayName}</p>
+            {Handle && (
+              <span className="relative float-right ml-auto h-fit">
+                <Handle>
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16"></div>
+                  <div className="h-fit">
+                    <DragIcon />
+                  </div>
+                </Handle>
+              </span>
+            )}
+          </div>
+          <p className="italic leading-none mt-1 text-zinc-400 text-sm">
+            {product.size}
+            {product.unitOfMeasurement?.value} {product.unitType.plural}
+          </p>
+        </div>
+      ) : (
+        <div className="flex h-full w-full whitespace-normal items-center  text-center text-zinc-200 italic p-2">
+          <div className="relative flex h-full w-full items-center text-center">
+            Choose a product
+            {Handle && (
+              <span className="absolute top-0 right-0">
+                <Handle>
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16"></div>
+                  <div className="h-fit">
+                    <DragIcon />
+                  </div>
+                </Handle>
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default StorageSpot;

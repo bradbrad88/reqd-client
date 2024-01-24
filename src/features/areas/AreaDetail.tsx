@@ -1,19 +1,17 @@
-import { Link, useNavigate, useOutletContext } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAreaContext, useVenueContext } from "src/hooks/useContexts";
+import { useDeleteArea } from "src/hooks/useAreas";
 import FlexList from "common/FlexList";
 import ListItem from "common/ListItem";
 import Card from "common/Card";
 import Button from "common/Button";
-import EditAreaName from "./edit/EditAreaName";
-
-import type { AreaDetail as AreaDetailType } from "api/areas";
-import { useDeleteArea } from "src/hooks/useAreas";
-import { useVenueContext } from "src/hooks/useContexts";
 import DestructiveDialog from "common/DestructiveDialog";
-import { useState } from "react";
+import EditAreaName from "./edit/EditAreaName";
 
 const AreaDetail = () => {
   const { venueId } = useVenueContext();
-  const { area } = useOutletContext<{ area: AreaDetailType }>();
+  const { area } = useAreaContext();
   const { deleteArea } = useDeleteArea();
   const nav = useNavigate();
   const [confirmDelete, setConfirmDelete] = useState(false);

@@ -59,6 +59,7 @@ export type AreaProduct = {
 
 export type StorageSpot = {
   id: string;
+  shelfId: string;
   productLine: string;
   stackHeight: number;
   columnWidth: number;
@@ -265,11 +266,24 @@ const setStorageSpotCount = async ({
   shelfId,
   count,
 }: SetStorageSpotCountVars) => {
-  return await axios.post(`/venue/${venueId}/areas/${areaId}/spot`, {
+  return await axios.put(`/venue/${venueId}/areas/${areaId}/spot-count`, {
     storageSpace,
     shelfId,
     count,
   });
+};
+
+export type MoveSpotVars = {
+  venueId: string;
+  areaId: string;
+  storageSpace: string;
+  spotId: string;
+  shelfId: string;
+  index: number;
+};
+
+const moveSpot = async ({ venueId, areaId, ...data }: MoveSpotVars) => {
+  return await axios.put(`/venue/${venueId}/areas/${areaId}/move-spot`, data);
 };
 
 const updateStorageSpot = async ({
@@ -279,7 +293,7 @@ const updateStorageSpot = async ({
   spotId,
   update,
 }: UpdateStorageSpotVars) => {
-  return await axios.put(`/venue/${venueId}/areas/${areaId}/spot`, {
+  return await axios.put(`/venue/${venueId}/areas/${areaId}/update-spot`, {
     storageSpace,
     spotId,
     update,
@@ -308,7 +322,8 @@ export const editProductLineApi = axiosHandler(editProductLine);
 export const removeProductLineApi = axiosHandler(removeProductLine);
 export const setStorageSectionCountApi = axiosHandler(setStorageSectionCount);
 export const setStorageShelfCountApi = axiosHandler(setStorageShelfCount);
-export const addStorageSpotApi = axiosHandler(setStorageSpotCount);
+export const setStorageSpotCountApi = axiosHandler(setStorageSpotCount);
+export const moveSpotApi = axiosHandler(moveSpot);
 export const updateStorageSpotApi = axiosHandler(updateStorageSpot);
 export const removeStorageSpotApi = axiosHandler(removeSpot);
 export const removeStorageShelfApi = axiosHandler(removeShelf);
