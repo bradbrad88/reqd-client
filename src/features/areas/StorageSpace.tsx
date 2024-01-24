@@ -3,6 +3,7 @@ import { useAreaContext, useVenueContext } from "src/hooks/useContexts";
 import {
   useEditProductLine,
   useMoveStorageSpot,
+  useRemoveSpot,
   useSetProductLine,
   useSetStorageSectionCount,
 } from "src/hooks/useAreas";
@@ -10,7 +11,11 @@ import StorageSection from "./StorageSection";
 import EditParLevel from "./edit/EditParLevel";
 import EditSpotProduct from "./edit/EditSpotProduct";
 
-import type { StorageSpace as StorageSpaceType, UpdateProductLine } from "api/areas";
+import type {
+  AreaDetail,
+  StorageSpace as StorageSpaceType,
+  UpdateProductLine,
+} from "api/areas";
 import {
   DndContext,
   DragEndEvent,
@@ -20,16 +25,20 @@ import {
   TouchSensor,
   UniqueIdentifier,
   closestCenter,
+  useDroppable,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
 import { useState } from "react";
 import StorageSpot from "./StorageSpot";
 import DragOverlay from "common/dnd/DragOverlay";
+import TrashIcon from "common/icons/Trash";
 
 type Props = {
   space: StorageSpaceType;
 };
+
+const TRASH_ID = "delete";
 
 const StorageSpace = ({ space }: Props) => {
   const { venueId } = useVenueContext();
@@ -38,6 +47,7 @@ const StorageSpace = ({ space }: Props) => {
   const { setProductLine } = useSetProductLine();
   const { editProductLine } = useEditProductLine();
   const { moveSpot } = useMoveStorageSpot();
+  const { removeSpot } = useRemoveSpot();
 
   const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 10 } });
   // A normal swipe on mobile should scroll, even on a handle. Hold for 200ms to pick up an item
@@ -106,6 +116,55 @@ const StorageSpace = ({ space }: Props) => {
 
   const onDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
+    setActiveDrag(null);
+
+    if (over?.id === TRASH_ID) {
+      const spotId = String(e.active.id);
+      removeSpot({
+        venueId,
+        areaId: area.id,
+        storageSpace: space.storageName,
+        spotId,
+      });
+
+      setArea(area => {
+        const findShelf = (
+          shelves: AreaDetail["storageSpaces"][string]["shelves"],
+          spotId: string
+        ) => {
+          const shelfId = Object.keys(shelves).find(shelfId => {
+            const shelf = shelves[shelfId];
+            if (!shelf) return false;
+            return shelf.spotLayout.includes(spotId);
+          });
+          return shelfId;
+        };
+        const shelfId = findShelf(space.shelves, spotId);
+        if (!shelfId) return area;
+        const shelf = space.shelves[shelfId];
+        const productLineId = space.spots[spotId].productLine;
+        const newArea = {
+          ...area,
+          storageSpaces: {
+            ...area.storageSpaces,
+            [space.storageName]: {
+              ...space,
+              shelves: {
+                ...space.shelves,
+                [shelfId]: {
+                  ...shelf,
+                  spotLayout: shelf.spotLayout.filter(id => id !== spotId),
+                },
+              },
+            },
+          },
+        };
+        delete newArea.storageSpaces[space.storageName].spots[spotId];
+        delete newArea.productLines[productLineId];
+        return newArea;
+      });
+      return;
+    }
 
     if (active.data.current?.type === "spot") {
       const draggingRect = active.rect.current.translated!;
@@ -159,6 +218,10 @@ const StorageSpace = ({ space }: Props) => {
             [space.storageName]: {
               ...space,
               shelves,
+              spots: {
+                ...space.spots,
+                [spotId]: { ...space.spots[spotId], shelfId: overShelfId },
+              },
             },
           },
         };
@@ -245,6 +308,7 @@ const StorageSpace = ({ space }: Props) => {
 
   const onDragCancel = () => {
     resetAreaState();
+    setActiveDrag(null);
   };
 
   return (
@@ -273,6 +337,7 @@ const StorageSpace = ({ space }: Props) => {
         onProductChange={onProductChange}
         close={onSlideoversClose}
       />
+      <DeleteOverlay active={!!activeDrag} />
       <DragOverlay isDragging={!!activeDrag}>{renderOverlayComponent()}</DragOverlay>
     </DndContext>
   );
@@ -295,6 +360,20 @@ const AddSection = ({ storageSpace }: { storageSpace: StorageSpaceType }) => {
     <button onClick={onClick} className="border-lime-600 border-dashed w-72 m-4 ml-0">
       + Section
     </button>
+  );
+};
+
+const DeleteOverlay = ({ active }: { active: boolean }) => {
+  const { setNodeRef, isOver } = useDroppable({ id: TRASH_ID });
+  return (
+    active && (
+      <div
+        ref={setNodeRef}
+        className="flex fixed bottom-0 left-0 right-0 h-[20%] bg-gradient-to-t from-black to-transparent from-50% z-10 items-center justify-center"
+      >
+        <TrashIcon size={50} fill={isOver ? "red" : "white"} />
+      </div>
+    )
   );
 };
 
