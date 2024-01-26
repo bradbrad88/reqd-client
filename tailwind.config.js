@@ -27,6 +27,7 @@ export default {
         neutral: colors.zinc["700"],
         background: colors.zinc["900"],
         input: colors.indigo["600"],
+        destructive: colors.orange["600"],
       },
       keyframes: {
         "accordion-down": {
