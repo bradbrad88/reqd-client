@@ -3,11 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAreaContext, useVenueContext } from "src/hooks/useContexts";
 import { useDeleteArea } from "src/hooks/useAreas";
 import FlexList from "common/FlexList";
-import ListItem from "common/ListItem";
 import Card from "common/Card";
 import Button from "common/Button";
 import DestructiveDialog from "common/DestructiveDialog";
 import EditAreaName from "./edit/EditAreaName";
+import StorageSpaceListItem from "./StorageSpaceListItem";
 
 const AreaDetail = () => {
   const { venueId } = useVenueContext();
@@ -17,11 +17,7 @@ const AreaDetail = () => {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const renderStorageSpaces = () =>
-    area.storageSpaceLayout.map(space => (
-      <Link key={space} to={`spaces/${space}`} className="text-white">
-        <ListItem>{space}</ListItem>
-      </Link>
-    ));
+    area.storageSpaceLayout.map(space => <StorageSpaceListItem key={space} space={space} />);
 
   const onDelete = () => {
     deleteArea({ venueId, areaId: area.id });

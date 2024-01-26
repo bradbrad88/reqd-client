@@ -94,6 +94,13 @@ export type RemoveStorageSpaceVars = {
   areaId: string;
 } & StorageSpaceLocation;
 
+export type RenameStorageSpaceVars = {
+  venueId: string;
+  areaId: string;
+  storageSpace: string;
+  newName: string;
+};
+
 export type SetProductLineVars = {
   venueId: string;
   areaId: string;
@@ -200,7 +207,13 @@ const removeStorageSpace = async ({
   areaId,
   ...location
 }: RemoveStorageSpaceVars) => {
-  return await axios.put(`/venue/${venueId}/areas/${areaId}/remove-section`, { ...location });
+  return await axios.put(`/venue/${venueId}/areas/${areaId}/remove-storage-space`, {
+    ...location,
+  });
+};
+
+const renameStorageSpace = async ({ venueId, areaId, ...data }: RenameStorageSpaceVars) => {
+  return await axios.put(`/venue/${venueId}/areas/${areaId}/rename-storage-space`, data);
 };
 
 const setProductLine = async ({
@@ -317,6 +330,7 @@ export const renameAreaApi = axiosHandler(renameArea);
 export const deleteAreaApi = axiosHandler(deleteArea);
 export const addStorageSpaceApi = axiosHandler(addStorageSpace);
 export const removeStorageSpaceApi = axiosHandler(removeStorageSpace);
+export const renameStorageSpaceApi = axiosHandler(renameStorageSpace);
 export const setProductLineApi = axiosHandler(setProductLine);
 export const editProductLineApi = axiosHandler(editProductLine);
 export const removeProductLineApi = axiosHandler(removeProductLine);

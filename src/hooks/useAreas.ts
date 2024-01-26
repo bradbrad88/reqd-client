@@ -16,6 +16,8 @@ import {
   setStorageShelfCountApi,
   updateStorageSpotApi,
   moveSpotApi,
+  renameStorageSpaceApi,
+  removeStorageSpaceApi,
 } from "api/areas";
 import type {
   AreaList,
@@ -35,6 +37,8 @@ import type {
   EditProductLineVars,
   RemoveProductLineVars,
   MoveSpotVars,
+  RenameStorageSpaceVars,
+  RemoveStorageSpaceVars,
 } from "api/areas";
 import { useMutation, useQueryClient } from "react-query";
 
@@ -103,6 +107,10 @@ export const useDeleteArea = () => {
       const filteredList = areaList.filter(area => area.id !== vars.areaId);
       client.setQueryData([vars.venueId, "areas", "list", null], filteredList);
     },
+    onSettled: async ctx => {
+      await client.cancelQueries();
+      client.invalidateQueries([ctx?.venueId, "areas"], { exact: false });
+    },
   });
   return { deleteArea: mutate };
 };
@@ -125,6 +133,63 @@ export const useAddStorageSpace = () => {
   });
 
   return { addStorageSpace: mutateAsync, isLoading };
+};
+
+export const useRemoveStorageSpace = () => {
+  const client = useQueryClient();
+  const { mutate, status } = useMutation({
+    mutationFn: async (vars: RemoveStorageSpaceVars) => {
+      await removeStorageSpaceApi(vars);
+      return { ...vars };
+    },
+    onSettled: async ctx => {
+      if (!ctx) return;
+      await client.cancelQueries();
+      client.invalidateQueries([ctx.venueId, "areas", "detail", ctx.areaId], { exact: false });
+    },
+  });
+  return {
+    removeStorageSpace: mutate,
+    status,
+  };
+};
+
+export const useRenameStorageSpace = () => {
+  const client = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: async (vars: RenameStorageSpaceVars) => {
+      await renameStorageSpaceApi(vars);
+      return { ...vars };
+    },
+    onMutate: async vars => {
+      const key = [vars.venueId, "areas", "detail", vars.areaId];
+      const query = client.getQueryData(key) as AreaDetail | null;
+      if (!query) return;
+      const storageSpaceLayout = query.storageSpaceLayout.map(space => {
+        if (space === vars.storageSpace) return vars.newName;
+        return space;
+      });
+      const storageSpaces = {
+        ...query.storageSpaces,
+        [vars.newName]: query.storageSpaces[vars.storageSpace],
+      };
+      delete storageSpaces[vars.storageSpace];
+      const newArea: AreaDetail = {
+        ...query,
+        storageSpaces,
+        storageSpaceLayout,
+      };
+      client.setQueryData(key, newArea);
+    },
+    onSettled: async ctx => {
+      if (!ctx) return;
+      await client.cancelQueries();
+      client.invalidateQueries({ queryKey: [ctx.venueId, "areas", "detail", ctx.areaId] });
+    },
+  });
+  return {
+    renameStorageSpace: mutate,
+  };
 };
 
 export const useSetProductLine = () => {
