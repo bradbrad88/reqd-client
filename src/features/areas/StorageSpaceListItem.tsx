@@ -1,15 +1,22 @@
-import { MouseEventHandler, useState } from "react";
+import { MouseEventHandler, PropsWithChildren, useState } from "react";
 import { Link } from "react-router-dom";
 import ListItem from "common/ListItem";
 import MenuIcon from "common/icons/Menu";
 import TransitionCollapseItem from "common/TransitionCollapseItem";
+import DragIcon from "common/icons/Drag";
 import EditStorageSpace from "./edit/EditStorageSpace";
 
 type Props = {
   space: string;
+  Handle?: React.ComponentType<{ children: React.ReactNode }>;
+  isDragging?: boolean;
 };
 
-const StorageSpaceListItem = ({ space }: Props) => {
+const EmptyHandle = (props: PropsWithChildren) => {
+  return <div>{props.children}</div>;
+};
+
+const StorageSpaceListItem = ({ space, Handle = EmptyHandle, isDragging = false }: Props) => {
   const [editMode, setEditMode] = useState(false);
 
   const onClick: MouseEventHandler = e => {
@@ -18,14 +25,17 @@ const StorageSpaceListItem = ({ space }: Props) => {
   };
 
   return (
-    <ListItem>
+    <ListItem dragging={isDragging}>
       <div className="flex justify-between">
         <Link to={`spaces/${space}`} className="text-white w-full">
           <div>{space}</div>
         </Link>
-        <div onClick={e => onClick(e)} className="">
+        <div onClick={e => onClick(e)} className="mx-3">
           <MenuIcon />
         </div>
+        <Handle>
+          <DragIcon />
+        </Handle>
       </div>
       <TransitionCollapseItem fold={!editMode}>
         <EditStorageSpace space={space} />

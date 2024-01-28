@@ -32,7 +32,7 @@ export const SortableItem = <THandle extends boolean>({
 
   const Handle = ({ children }: { children?: React.ReactNode }) => {
     return (
-      <div {...listeners} {...attributes} className={cn(!handle && "touch-none")}>
+      <div {...listeners} {...attributes} className="touch-none">
         {children}
       </div>
     );
@@ -47,7 +47,7 @@ export const SortableItem = <THandle extends boolean>({
       {...(!handle && listeners)}
       {...(!handle && attributes)}
       style={style}
-      className={cn("", isDragging && "opacity-20")}
+      className={cn("", isDragging && "opacity-20", !handle && "touch-none")}
     >
       {render(Handle)}
     </div>

@@ -18,6 +18,7 @@ import {
   moveSpotApi,
   renameStorageSpaceApi,
   removeStorageSpaceApi,
+  moveStorageSpaceApi,
 } from "api/areas";
 import type {
   AreaList,
@@ -39,6 +40,7 @@ import type {
   MoveSpotVars,
   RenameStorageSpaceVars,
   RemoveStorageSpaceVars,
+  MoveStorageSpaceVars,
 } from "api/areas";
 import { useMutation, useQueryClient } from "react-query";
 
@@ -189,6 +191,24 @@ export const useRenameStorageSpace = () => {
   });
   return {
     renameStorageSpace: mutate,
+  };
+};
+
+export const useMoveStorageSpace = () => {
+  const client = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: async (vars: MoveStorageSpaceVars) => {
+      await moveStorageSpaceApi(vars);
+      return { ...vars };
+    },
+    onSettled: async ctx => {
+      if (!ctx) return;
+      await client.cancelQueries();
+      client.invalidateQueries({ queryKey: [ctx.venueId, "areas", "detail", ctx.areaId] });
+    },
+  });
+  return {
+    moveStorageSpace: mutate,
   };
 };
 
