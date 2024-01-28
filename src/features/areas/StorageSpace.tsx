@@ -21,18 +21,15 @@ import {
   DragEndEvent,
   DragOverEvent,
   DragStartEvent,
-  MouseSensor,
-  TouchSensor,
   UniqueIdentifier,
   closestCenter,
   useDroppable,
-  useSensor,
-  useSensors,
 } from "@dnd-kit/core";
 import { useState } from "react";
 import StorageSpot from "./StorageSpot";
 import DragOverlay from "common/dnd/DragOverlay";
 import TrashIcon from "common/icons/Trash";
+import useSensors from "src/hooks/useSensors";
 
 type Props = {
   space: StorageSpaceType;
@@ -48,13 +45,7 @@ const StorageSpace = ({ space }: Props) => {
   const { editProductLine } = useEditProductLine();
   const { moveSpot } = useMoveStorageSpot();
   const { removeSpot } = useRemoveSpot();
-
-  const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 10 } });
-  // A normal swipe on mobile should scroll, even on a handle. Hold for 200ms to pick up an item
-  const touchSensor = useSensor(TouchSensor, {
-    activationConstraint: { distance: 21, delay: 200, tolerance: 20 },
-  });
-  const sensors = useSensors(touchSensor, mouseSensor);
+  const sensors = useSensors();
   const editingProduct = params.get("editProduct") === "true";
   const editingParLevel = params.get("editParLevel") === "true";
   const [activeDrag, setActiveDrag] = useState<{ id: UniqueIdentifier; type: string } | null>(
