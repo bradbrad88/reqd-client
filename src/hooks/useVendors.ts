@@ -1,16 +1,9 @@
 import { detailFactory, keys, listFactory } from "api/querieFactory";
 import { useMutation } from "./useMutation";
-import { createVendorApi, deleteVendorApi } from "api/vendors";
+import { VendorDetail, VendorList, createVendorApi, deleteVendorApi } from "api/vendors";
 
-type VendorList = {
-  id: string;
-  vendorName: string;
-}[];
-type VendorFilters = undefined;
-type VendorDetail = {
-  id: string;
-  vendorName: string;
-};
+export type VendorFilters = null;
+
 export const useVendorList = listFactory<VendorList, VendorFilters>("vendors");
 export const useVendorDetail = detailFactory<VendorDetail>("vendors");
 

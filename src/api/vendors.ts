@@ -4,9 +4,10 @@ import { axiosHandler } from "./axiosHandler";
 export type VendorList = {
   id: string;
   vendorName: string;
+  logo: string;
 }[];
 
-type VendorDetail = {
+export type VendorDetail = {
   id: string;
   vendorName: string;
   repName: string;

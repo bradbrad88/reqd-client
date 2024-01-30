@@ -1,35 +1,31 @@
-import { VendorList as VendorListType } from "api/vendors";
-import CallToAction from "common/CallToAction";
-import FlexList from "common/FlexList";
-import ListItem from "common/ListItem";
-import { useNavigate, useOutletContext } from "react-router-dom";
-
-type VendorListItemProps = {
-  id: string;
-  vendorName: string;
-};
-
-const VendorListItem = ({ id, vendorName }: VendorListItemProps) => {
-  const nav = useNavigate();
-  const onClick = () => {
-    nav(id);
-  };
-
-  return (
-    <ListItem>
-      <div onClick={onClick}>{vendorName}</div>
-    </ListItem>
-  );
-};
+import { useNavigate } from "react-router-dom";
+import { useVendorList } from "src/hooks/useVendors";
+import { useVenueContext } from "src/hooks/useContexts";
+import AvatarList, { AvatarItem } from "common/AvatarList";
+import FixedCallToAction from "common/FixedCallToAction";
 
 const VendorList = () => {
-  const { vendors } = useOutletContext<{ vendors: VendorListType }>();
+  const { venueId, venueName } = useVenueContext();
+  const { data: vendors } = useVendorList(venueId);
   const nav = useNavigate();
+
+  const onSelectVendor = (vendor: string) => {
+    nav(vendor);
+  };
+
   const renderVendors = () => {
     if (!vendors) return null;
-    return vendors.map(vendor => (
-      <VendorListItem key={vendor.id} id={vendor.id} vendorName={vendor.vendorName} />
-    ));
+    const items: AvatarItem[] = vendors.map(vendor => ({
+      id: vendor.id,
+      description: "",
+      displayName: vendor.vendorName,
+      imageUrl: vendor.logo,
+    }));
+    return (
+      <ul className="rounded-xl overflow-hidden border-[1px] border-zinc-600">
+        <AvatarList items={items} onSelect={onSelectVendor} />
+      </ul>
+    );
   };
 
   const onCreate = () => {
@@ -37,10 +33,15 @@ const VendorList = () => {
   };
 
   return (
-    <div className="flex flex-col gap-5">
-      <CallToAction action={onCreate}>Create</CallToAction>
-      <FlexList>{renderVendors()}</FlexList>
-    </div>
+    <main className="p-3">
+      <header className="mb-3 mt-3">
+        <h1 className="text-2xl">Vendors currently used at {venueName}</h1>
+      </header>
+      <div className="flex flex-col gap-5">
+        <FixedCallToAction action={onCreate}>Add Vendor</FixedCallToAction>
+        {renderVendors()}
+      </div>
+    </main>
   );
 };
 
