@@ -4,11 +4,11 @@ import { KeyboardEventHandler, useRef } from "react";
 type OnSelect = (value: string) => void;
 
 type Props = {
-  items: Item[];
+  items: AvatarItem[];
   onSelect: OnSelect;
 };
 
-type Item = {
+export type AvatarItem = {
   id: string;
   displayName: string;
   description: string;
@@ -16,7 +16,7 @@ type Item = {
 };
 
 type ItemProps = {
-  item: Item;
+  item: AvatarItem;
   onSelect: OnSelect;
 };
 
