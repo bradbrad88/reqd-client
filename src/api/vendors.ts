@@ -14,29 +14,13 @@ export type VendorDetail = {
   contactNumber: string;
 };
 
-type CreateVendor = {
+export type RemoveVendorFromVenueVars = {
   venueId: string;
-  vendorName: string;
-  contactNumber?: string;
-  repName?: string;
+  vendorId: string;
 };
 
-const createVendor = async ({
-  venueId,
-  vendorName,
-  contactNumber = "",
-  repName = "",
-}: CreateVendor) => {
-  return await axios.post<VendorDetail>(`/venue/${venueId}/vendors`, {
-    vendorName,
-    contactNumber,
-    repName,
-  });
-};
-
-const deleteVendor = async ({ venueId, vendorId }: { venueId: string; vendorId: string }) => {
+const removeVendorFromVenue = async ({ venueId, vendorId }: RemoveVendorFromVenueVars) => {
   return await axios.delete(`/venue/${venueId}/vendors/${vendorId}`);
 };
 
-export const createVendorApi = axiosHandler(createVendor);
-export const deleteVendorApi = axiosHandler(deleteVendor);
+export const removeVendorFromVenueApi = axiosHandler(removeVendorFromVenue);

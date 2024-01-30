@@ -1,21 +1,21 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useVenueContext } from "src/hooks/useContexts";
-import { useDeleteVendor, useVendorDetail } from "src/hooks/useVendors";
+import { useRemoveVendorFromVenue, useVendorDetail } from "src/hooks/useVendors";
 
 const VendorDetails = () => {
   const { venueId } = useVenueContext();
   const { vendorId } = useParams<{ vendorId: string }>();
   const { data: vendor } = useVendorDetail(vendorId!, venueId);
 
-  const { deleteVendor } = useDeleteVendor(venueId);
+  const { removeVendor } = useRemoveVendorFromVenue();
   const nav = useNavigate();
 
   const onDelete = () => {
-    deleteVendor(
+    removeVendor(
       { vendorId: vendorId!, venueId },
       {
         onSuccess: () => {
-          nav("../", { relative: "path" });
+          nav("../", { relative: "path", replace: true });
         },
       }
     );
