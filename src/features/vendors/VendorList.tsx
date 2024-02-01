@@ -28,8 +28,8 @@ const VendorList = () => {
     );
   };
 
-  const onCreate = () => {
-    nav("create");
+  const onAddVendor = () => {
+    nav("add");
   };
 
   return (
@@ -38,7 +38,7 @@ const VendorList = () => {
         <h1 className="text-2xl">Vendors currently used at {venueName}</h1>
       </header>
       <div className="flex flex-col gap-5">
-        <FixedCallToAction action={onCreate}>Add Vendor</FixedCallToAction>
+        <FixedCallToAction action={onAddVendor}>Add Vendor</FixedCallToAction>
         {renderVendors()}
       </div>
     </main>

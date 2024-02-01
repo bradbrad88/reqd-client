@@ -12,7 +12,6 @@ import ProductDetails from "features/products/ProductDetails";
 import Vendors from "./pages/Vendors";
 import VendorList from "features/vendors/VendorList";
 import VendorDetails from "features/vendors/VendorDetails";
-import CreateVendor from "features/vendors/CreateVendor";
 
 import Orders from "./pages/Orders";
 import OrderList from "features/orderForm/OrderList";
@@ -35,6 +34,7 @@ import ManageInventory from "features/inventory/ManageInventory";
 
 import Shell from "common/Shell";
 import CreateArea from "features/areas/CreateArea";
+import AddVendorToVenue from "features/vendors/AddVendorToVenue";
 
 const queryClient = new QueryClient();
 
@@ -62,7 +62,7 @@ function App() {
                 <Route path="vendors" element={<Vendors />}>
                   <Route path="" element={<VendorList />} />
                   <Route path=":vendorId" element={<VendorDetails />} />
-                  <Route path="create" element={<CreateVendor />} />
+                  <Route path="add" element={<AddVendorToVenue />} />
                 </Route>
                 <Route path="areas" element={<Areas />}>
                   <Route path="" element={<AreaList />} />
