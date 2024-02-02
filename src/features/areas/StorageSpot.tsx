@@ -5,7 +5,7 @@ import { createArrayOfLength } from "utils/arrays";
 import { useAreaContext, useVenueContext } from "src/hooks/useContexts";
 import { useUpdateStorageSpot } from "src/hooks/useAreas";
 import Button from "common/Button";
-import DragIcon from "common/icons/Drag";
+import { DragIcon } from "common/icons";
 import StorageSpotSlot from "./StorageSpotSlot";
 import "./storageSpot.css";
 
@@ -163,7 +163,7 @@ function ProductSpotPresentation({ product, Handle, isDragging = false }: Presen
                 <Handle>
                   <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16"></div>
                   <div className="h-fit">
-                    <DragIcon />
+                    <DragIcon fill="white" size={24} />
                   </div>
                 </Handle>
               </span>
@@ -183,7 +183,7 @@ function ProductSpotPresentation({ product, Handle, isDragging = false }: Presen
                 <Handle>
                   <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16"></div>
                   <div className="h-fit">
-                    <DragIcon />
+                    <DragIcon fill="white" size={24} />
                   </div>
                 </Handle>
               </span>

@@ -28,7 +28,7 @@ import {
 import { useState } from "react";
 import StorageSpot from "./StorageSpot";
 import DragOverlay from "common/dnd/DragOverlay";
-import TrashIcon from "common/icons/Trash";
+import { TrashIcon } from "common/icons";
 import useSensors from "src/hooks/useSensors";
 
 type Props = {

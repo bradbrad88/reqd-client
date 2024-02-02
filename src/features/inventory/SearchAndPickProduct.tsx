@@ -4,7 +4,7 @@ import { useInventoryList } from "src/hooks/useInventory";
 import AvatarList from "common/AvatarList";
 import SearchBar from "common/SearchBar";
 import Button from "common/Button";
-import XIcon from "common/icons/X";
+import { XIcon } from "common/icons";
 
 type Props = {
   onValueChange: (value: string) => void;

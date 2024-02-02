@@ -1,8 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Link, Route, Routes } from "react-router-dom";
 import useClickOutside from "src/hooks/useClickOutside";
-import HomeIcon from "./icons/Home";
-import MenuIcon from "./icons/Menu";
+import { HomeIcon, MenuIcon } from "./icons";
 
 type Props = {
   left?: React.ReactNode;
@@ -35,7 +34,7 @@ const Home = () => {
   return (
     <Link to="/">
       <div className="w-full h-full flex items-center justify-center">
-        <HomeIcon />
+        <HomeIcon className="h-8 w-8" fill="white" />
       </div>
     </Link>
   );
@@ -55,7 +54,7 @@ const Settings = () => {
   return (
     <div ref={ref} onClick={onClick} className="relative h-full">
       <div className="h-full flex justify-center items-center">
-        <MenuIcon />
+        <MenuIcon className="h-8 w-8" fill="white" />
       </div>
       {active && (
         <div className="absolute bottom-full border-zinc-500 border-[1px] rounded-md">

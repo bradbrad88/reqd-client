@@ -1,9 +1,8 @@
 import { MouseEventHandler, PropsWithChildren, useState } from "react";
 import { Link } from "react-router-dom";
 import ListItem from "common/ListItem";
-import MenuIcon from "common/icons/Menu";
+import { MenuIcon, DragIcon } from "common/icons";
 import TransitionCollapseItem from "common/TransitionCollapseItem";
-import DragIcon from "common/icons/Drag";
 import EditStorageSpace from "./edit/EditStorageSpace";
 
 type Props = {
@@ -31,10 +30,10 @@ const StorageSpaceListItem = ({ space, Handle = EmptyHandle, isDragging = false 
           <div>{space}</div>
         </Link>
         <div onClick={e => onClick(e)} className="mx-3">
-          <MenuIcon />
+          <MenuIcon size={24} fill="white" />
         </div>
         <Handle>
-          <DragIcon />
+          <DragIcon size={24} fill="white" />
         </Handle>
       </div>
       <TransitionCollapseItem fold={!editMode}>

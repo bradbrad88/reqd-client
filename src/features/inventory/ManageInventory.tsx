@@ -4,7 +4,7 @@ import FlexList from "common/FlexList";
 import ListItem from "common/ListItem";
 import SearchBar from "common/SearchBar";
 import Spinner from "common/Spinner";
-import TickIcon from "common/icons/Tick";
+import { TickIcon } from "common/icons";
 import { useVenueContext } from "src/hooks/useContexts";
 import { useAddToInventory, useRemoveFromInventory } from "src/hooks/useInventory";
 import { useProductList } from "src/hooks/useProducts";
