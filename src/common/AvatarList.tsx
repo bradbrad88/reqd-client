@@ -1,5 +1,6 @@
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import { KeyboardEventHandler, useRef } from "react";
+import { TickIcon } from "./icons";
 
 type OnSelect = (value: string) => void;
 
@@ -13,6 +14,7 @@ export type AvatarItem = {
   displayName: string;
   description: string;
   imageUrl?: string;
+  selected?: boolean;
 };
 
 type ItemProps = {
@@ -75,11 +77,15 @@ function ListItem({ item, onSelect }: ItemProps) {
       tabIndex={0}
     >
       <div className="flex min-w-0 gap-x-4">
-        <img
-          className="h-12 w-12 flex-none rounded-full bg-zinc-700 text-white text-xs"
-          src={item.imageUrl}
-          alt={item.displayName.slice(0, 5)}
-        />
+        <div className="h-12 w-12 flex-none rounded-full bg-zinc-600 text-white text-xs">
+          {item.imageUrl && (
+            <img
+              className="h-full w-full flex-none text-white text-xs"
+              src={item.imageUrl}
+              alt={item.displayName.slice(0, 5)}
+            />
+          )}
+        </div>
         <div className="min-w-0 flex-auto">
           <p className="text-sm font-semibold leading-6">
             <span className="absolute inset-x-0 -top-px bottom-0" />
@@ -90,9 +96,15 @@ function ListItem({ item, onSelect }: ItemProps) {
           </p>
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-x-4">
-        <ChevronRightIcon className="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
-      </div>
+      {item.selected ? (
+        <div className="self-center h-8 w-8 border-lime-500 border-2 rounded-full overflow-hidden">
+          <TickIcon className="fill-lime-500" />
+        </div>
+      ) : (
+        <div className="flex shrink-0 items-center gap-x-4">
+          <ChevronRightIcon className="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
+        </div>
+      )}
     </li>
   );
 }
