@@ -24,13 +24,14 @@ export type VendorDetail = {
 export type AddVendorToVenueVars = {
   venueId: string;
   vendorId: string;
+  repName?: string;
+  contactNumber?: string;
+  email?: string;
 };
 
 export type RemoveVendorFromVenueVars = {
   venueId: string;
   vendorId: string;
-  repName?: string;
-  contactNumber?: string;
 };
 
 const addVendorToVenue = async ({ venueId, ...data }: AddVendorToVenueVars) => {

@@ -33,7 +33,7 @@ export const useGlobalVendorList = (venueId: string, query: string) => {
 
 export const useAddVendorToVenue = () => {
   const client = useQueryClient();
-  const { mutate } = useMutation({
+  const { mutateAsync } = useMutation({
     mutationFn: async (vars: AddVendorToVenueVars) => {
       await addVendorToVenueApi(vars);
       return { ...vars };
@@ -47,7 +47,7 @@ export const useAddVendorToVenue = () => {
   });
 
   return {
-    addVendor: mutate,
+    addVendor: mutateAsync,
   };
 };
 
