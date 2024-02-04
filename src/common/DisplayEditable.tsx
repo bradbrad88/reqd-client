@@ -1,12 +1,14 @@
 import { useRef } from "react";
 import useShortcuts from "src/hooks/useShortcuts";
+import Spinner from "./Spinner";
 
 type Props = {
   text?: string | number;
+  isWorking?: boolean;
   onClick: () => void;
 };
 
-const DisplayEditable = ({ text, onClick }: Props) => {
+const DisplayEditable = ({ text, isWorking, onClick }: Props) => {
   const ref = useRef<HTMLDivElement>(null);
   useShortcuts("Enter", onClick, ref);
 
@@ -22,11 +24,16 @@ const DisplayEditable = ({ text, onClick }: Props) => {
     <div
       ref={ref}
       onClick={onClick}
-      className="flex gap-2 bg-zinc-700 rounded-lg p-2 px-3 cursor-pointer "
+      className="relative flex gap-2 bg-zinc-700 rounded-full items-center px-4 cursor-pointer h-12 text-base"
       tabIndex={0}
       onKeyDown={onKeyDown}
     >
-      <div className="font-bold h-5">{text}</div>
+      <div className="font-bold">{text}</div>
+      {isWorking && (
+        <span className="absolute right-4">
+          <Spinner />
+        </span>
+      )}
     </div>
   );
 };
