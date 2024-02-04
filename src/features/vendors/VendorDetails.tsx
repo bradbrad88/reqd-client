@@ -5,6 +5,9 @@ import { useRemoveVendorFromVenue, useVendorDetail } from "src/hooks/useVendors"
 import DestructiveDialog from "common/DestructiveDialog";
 import Card from "common/Card";
 import Button from "common/Button";
+import EditRepContactNumber from "./edit/EditRepContact";
+import EditRepName from "./edit/EditRepName";
+import EditRepEmail from "./edit/EditRepEmail";
 
 const VendorDetails = () => {
   const { venueId, venueName } = useVenueContext();
@@ -31,15 +34,30 @@ const VendorDetails = () => {
       <h1 className="text-2xl font-bold mb-4 mt-3">
         Edit the details of your relationship with {vendor?.vendorName}
       </h1>
-      <div className="">
+      <div className="flex flex-col gap-5">
+        <Card>
+          <h2 className="text-lg font-bold mb-1">Rep Contact Details</h2>
+          <p className="leading-tight text-zinc-300">
+            Edit the details of the representative for this vendor, if you have a steady
+            contact you deal with.
+          </p>
+          {vendor && (
+            <div className="flex flex-col gap-5 mt-5">
+              <EditRepName vendor={vendor} />
+              <EditRepContactNumber vendor={vendor} />
+              <EditRepEmail vendor={vendor} />
+            </div>
+          )}
+        </Card>
         <Card className="flex flex-col">
           <p className="text-orange-400">Warning! (Permanent)</p>
-          <h2 className="text-lg font-bold">
-            Remove <span className="italic">{vendor?.vendorName}</span> from {venueName}
+          <h2 className="text-lg font-bold mb-1">
+            Remove the vendor, <span className="italic">{vendor?.vendorName}</span> from{" "}
+            {venueName}
           </h2>
-          <p>
+          <p className="leading-tight text-zinc-300">
             If you no longer use this vendor then remove them from your preferred vendors by
-            clicking here
+            clicking here.
           </p>
           <Button
             onClick={() => setConfirmDelete(true)}

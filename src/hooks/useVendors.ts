@@ -2,6 +2,8 @@ import { detailFactory, listFactory } from "api/querieFactory";
 import {
   AddVendorToVenueVars,
   RemoveVendorFromVenueVars,
+  UpdatePreferredVendorContactApi,
+  UpdatePreferredVendorContactVars,
   VendorDetail,
   VendorList,
   addVendorToVenueApi,
@@ -77,4 +79,36 @@ export const useRemoveVendorFromVenue = () => {
   });
 
   return { removeVendor: mutate, status };
+};
+
+export const useUpdatePreferredVendorContact = () => {
+  const client = useQueryClient();
+  const { mutate, status } = useMutation({
+    mutationFn: async (vars: UpdatePreferredVendorContactVars) => {
+      await UpdatePreferredVendorContactApi(vars);
+      return { ...vars };
+    },
+    onMutate: async vars => {
+      await client.cancelQueries();
+      const key = [vars.venueId, RESOURCE_TYPE, "detail", vars.vendorId];
+      const prev = (client.getQueryData(key) as VendorDetail) || undefined;
+      if (!prev) return;
+      if (vars.repName != null) prev.repName = vars.repName;
+      if (vars.contactNumber != null) prev.contactNumber = vars.contactNumber;
+      if (vars.email != null) prev.email = vars.email;
+      client.setQueryData(key, prev);
+    },
+    onSettled: async vars => {
+      if (!vars) return;
+      await client.cancelQueries();
+      client.invalidateQueries([vars.venueId, RESOURCE_TYPE, "detail", vars.vendorId], {
+        exact: false,
+      });
+    },
+  });
+
+  return {
+    updatePreferredVendorContact: mutate,
+    status,
+  };
 };

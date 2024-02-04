@@ -17,8 +17,9 @@ export type GlobalVendorList = {
 export type VendorDetail = {
   id: string;
   vendorName: string;
-  repName: string;
-  contactNumber: string;
+  repName: string | null;
+  contactNumber: string | null;
+  email: string | null;
 };
 
 export type AddVendorToVenueVars = {
@@ -34,12 +35,28 @@ export type RemoveVendorFromVenueVars = {
   vendorId: string;
 };
 
+export type UpdatePreferredVendorContactVars = {
+  venueId: string;
+  vendorId: string;
+  repName?: string;
+  contactNumber?: string;
+  email?: string;
+};
+
 const addVendorToVenue = async ({ venueId, ...data }: AddVendorToVenueVars) => {
   return await axios.post(`/venue/${venueId}/vendors`, data);
 };
 
 const removeVendorFromVenue = async ({ venueId, vendorId }: RemoveVendorFromVenueVars) => {
   return await axios.delete(`/venue/${venueId}/vendors/${vendorId}`);
+};
+
+const updatePreferredVendorContact = async ({
+  venueId,
+  vendorId,
+  ...data
+}: UpdatePreferredVendorContactVars) => {
+  return await axios.put(`/venue/${venueId}/vendors/${vendorId}`, data);
 };
 
 const getGlobalVendors = async ({ venueId, query }: { venueId: string; query?: string }) => {
@@ -51,3 +68,4 @@ const getGlobalVendors = async ({ venueId, query }: { venueId: string; query?: s
 export const addVendorToVenueApi = axiosHandler(addVendorToVenue);
 export const removeVendorFromVenueApi = axiosHandler(removeVendorFromVenue);
 export const getGlobalVendorsApi = axiosHandler(getGlobalVendors);
+export const UpdatePreferredVendorContactApi = axiosHandler(updatePreferredVendorContact);
