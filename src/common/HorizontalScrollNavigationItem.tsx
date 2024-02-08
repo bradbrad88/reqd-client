@@ -1,8 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, LinkProps } from "react-router-dom";
 import { cn } from "utils/cn";
 
 type Props = {
-  to: string;
+  to: LinkProps["to"];
   children: React.ReactNode;
   active: boolean;
 };
