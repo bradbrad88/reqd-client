@@ -1,102 +1,123 @@
-import { z } from "zod";
-import { useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { detailFactory, keys, listFactory } from "api/querieFactory";
-import { useMutation } from "./useMutation";
 import {
+  CreateOrderVars,
   OrderDetail,
-  OrderHistory,
   OrderList,
+  SetProductQuantityVars,
   createOrderApi,
   getOrderHistoryApi,
-  setProductAmountApi,
+  getVendorSummaryApi,
+  setProductQuantityApi,
 } from "api/orders";
 
-const RESOURCE = "orders" as const;
+const RESOURCE_TYPE = "orders" as const;
 
 type OrderFilters = undefined;
 
-export const useOrderList = listFactory<OrderList, OrderFilters>(RESOURCE);
-export const useOrderDetail = detailFactory<OrderDetail>(RESOURCE);
+export const useOrderList = listFactory<OrderList, OrderFilters>(RESOURCE_TYPE);
+export const useOrderDetail = detailFactory<OrderDetail>(RESOURCE_TYPE);
 
-export const useCreateOrder = (venueId: string) => {
-  const key = keys.all(venueId, RESOURCE);
-  const { mutate, mutateAsync } = useMutation(key, createOrderApi);
-  return { createOrder: mutate, createOrderAsync: mutateAsync };
+export const useCreateOrder = () => {
+  const client = useQueryClient();
+  const { mutateAsync } = useMutation({
+    mutationFn: async (vars: CreateOrderVars) => {
+      await createOrderApi(vars);
+      return { ...vars };
+    },
+    onSettled: async vars => {
+      await client.cancelQueries();
+      client.invalidateQueries([vars?.venueId, RESOURCE_TYPE, "list"], { exact: false });
+    },
+  });
+
+  return {
+    createOrder: mutateAsync,
+  };
 };
 
-const OrderDetailSchema = z.object({
-  id: z.string(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  items: z
-    .object({
-      productId: z.string(),
-      totalAmount: z.number(),
-      areaAmounts: z
-        .object({
-          productLocationId: z.string(),
-          amount: z.number(),
-        })
-        .array(),
-    })
-    .array(),
-});
+// export const useCreateOrder = (venueId: string) => {
+//   const key = keys.all(venueId, RESOURCE);
+//   const { mutate, mutateAsync } = useMutation(key, createOrderApi);
+//   return { createOrder: mutate, createOrderAsync: mutateAsync };
+// };
 
-export const useSetProductAmount = (venueId: string, orderId: string) => {
-  const key = keys.detail(venueId, RESOURCE, orderId);
-  const { mutate } = useMutation(
-    key,
-    setProductAmountApi,
-    // Optimistic Update
-    (prev, { update: { productLocationId, amount, productId }, ...order }) => {
-      // No cached orderDetail value
-      if (!prev) {
-        return {
-          ...order,
-          items: [
-            { productId, totalAmount: amount, areaAmounts: [productLocationId, amount] },
-          ],
-        };
-      }
+// const OrderDetailSchema = z.object({
+//   id: z.string(),
+//   createdAt: z.string(),
+//   updatedAt: z.string(),
+//   items: z
+//     .object({
+//       productId: z.string(),
+//       totalAmount: z.number(),
+//       areaAmounts: z
+//         .object({
+//           productLocationId: z.string(),
+//           amount: z.number(),
+//         })
+//         .array(),
+//     })
+//     .array(),
+// });
 
-      // Find or create the current product item
-      const data = OrderDetailSchema.parse(prev);
-      const item = data.items.find(item => item.productId === productId) || {
-        productId,
-        totalAmount: 0,
-        areaAmounts: [],
+export const useSetProductQuantity = () => {
+  const client = useQueryClient();
+  const { mutate } = useMutation({
+    mutationFn: async (vars: SetProductQuantityVars) => {
+      await setProductQuantityApi(vars);
+      return { ...vars };
+    },
+    onSettled: async vars => {
+      if (!vars) return;
+      const key = [vars.venueId, RESOURCE_TYPE, "detail", vars.orderId];
+      await client.cancelQueries();
+      client.invalidateQueries(key, { exact: false });
+    },
+    onMutate: async vars => {
+      await client.cancelQueries();
+      const key = [vars.venueId, RESOURCE_TYPE, "detail", vars.orderId];
+      const previousData = client.getQueryData(key) as OrderDetail | undefined;
+      if (!previousData) return;
+      const optimisticData = {
+        ...previousData,
+        products: {
+          ...previousData.products,
+          [vars.productId]: {
+            ...previousData.products[vars.productId],
+            quantity: vars.quantity,
+          },
+        },
       };
+      client.setQueryData(key, optimisticData);
+    },
+  });
+  return { setProductQuantity: mutate };
+};
 
-      // Update or create areaAmount with productLocationId and amount
-      const areaAmount = { productLocationId, amount };
-      const newAreaAmounts = item.areaAmounts
-        .filter(areaAmount => areaAmount.productLocationId !== productLocationId)
-        .concat(areaAmount);
-      item.areaAmounts = newAreaAmounts;
-      item.totalAmount = newAreaAmounts.reduce(
-        (total, areaAmount) => total + areaAmount.amount,
-        0
-      );
-
-      const items = data.items.filter(item => item.productId !== productId).concat(item);
-      return {
-        ...order,
-        items,
-      };
-    }
-  );
-
-  return { mutate };
+export const useVendorSummary = (venueId: string, orderId: string, vendorId: string) => {
+  const key = [...keys.detail(venueId, RESOURCE_TYPE, orderId), vendorId] as const;
+  const { data, status } = useQuery({
+    queryKey: key,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    queryFn: async ({ queryKey: [venueId, _resource, _detail, orderId, vendorId] }) => {
+      return await getVendorSummaryApi({ venueId, orderId, vendorId });
+    },
+  });
+  return {
+    vendorSummary: data,
+    status,
+  };
 };
 
 export const useOrderHistory = (venueId: string, dates: Date[], orderId: string) => {
-  const key = [...keys.all(venueId, RESOURCE), "history", dates] as const;
+  const key = [...keys.all(venueId, RESOURCE_TYPE), "history", dates] as const;
   const { data, status } = useQuery(
     key,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async ({ queryKey: [venueId, _orders, _history, dates] }) =>
-      await getOrderHistoryApi({ venueId, dates, orderId })
+      await getOrderHistoryApi({ venueId, dates, orderId }),
+    { cacheTime: Infinity, staleTime: Infinity }
   );
 
-  return { data: (data || []) as OrderHistory[], status };
+  return { history: data, status };
 };

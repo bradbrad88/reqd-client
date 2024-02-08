@@ -1,67 +1,32 @@
-import { useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
-import { useVenueContext } from "src/hooks/useContexts";
-import { useProductList } from "src/hooks/useProducts";
-import { useOrderDetail } from "src/hooks/useOrders";
+import { OrderDetail } from "api/orders";
 import FixedCallToAction from "common/FixedCallToAction";
-import FlexList from "common/FlexList";
-import ListItem from "common/ListItem";
+import AvatarList from "common/AvatarList";
 
-const OrderVendorList = () => {
-  const { venueId } = useVenueContext();
-  const { orderId } = useParams<{ orderId: string }>();
-  const { data: order } = useOrderDetail(orderId!, venueId);
-  const { data: products } = useProductList(venueId);
+import type { AvatarItem } from "common/AvatarList";
+import { useNavigate } from "react-router-dom";
 
-  const vendors = useMemo(() => {
-    const productMap = new Map<string, { vendorId: string; vendorName: string }>();
-    for (const product of products) {
-      if (product.vendorId != null && product.vendorName != null) {
-        productMap.set(product.id, {
-          vendorId: product.vendorId,
-          vendorName: product.vendorName,
-        });
-      }
-    }
-    const vendors =
-      order?.items.reduce((map, item) => {
-        if (item.totalAmount === 0) return map;
-        const vendorData = productMap.get(item.productId);
-        if (vendorData) {
-          const vendor = map.get(vendorData.vendorId) || {
-            vendorId: vendorData.vendorId,
-            vendorName: vendorData.vendorName,
-            productCount: 0,
-          };
-          map.set(vendorData.vendorId, { ...vendor, productCount: vendor.productCount + 1 });
-        }
-        return map;
-      }, new Map<string, { vendorId: string; vendorName: string; productCount: number }>()) ||
-      new Map();
-    return Array.from(vendors?.values()) as {
-      vendorId: string;
-      vendorName: string;
-      productCount: number;
-    }[];
-  }, [order?.items, products]);
+type Props = {
+  order: OrderDetail;
+};
 
-  const renderVendors = () => {
-    return vendors.map(vendor => (
-      <Link to={vendor.vendorId} key={vendor.vendorId}>
-        <div className="bg-zinc-900 cursor-pointer hover:bg-zinc-900 text-zinc-300 text-lg">
-          <ListItem>
-            <span className="font-bold text-white mr-3">{vendor.vendorName}</span>
-            {vendor.productCount} item{vendor.productCount === 1 ? "" : "s"}
-          </ListItem>
-        </div>
-      </Link>
-    ));
+const OrderVendorList = ({ order }: Props) => {
+  const nav = useNavigate();
+  const onSelect = (vendorId: string) => {
+    nav(vendorId);
   };
 
+  const items: AvatarItem[] = order.vendorSummary.map(vendor => ({
+    id: vendor.vendorId,
+    displayName: vendor.vendorName,
+    description: vendor.productCount + " item" + (vendor.productCount === 1 ? "" : "s"),
+  }));
+
   return (
-    <div>
-      <FlexList>{renderVendors()}</FlexList>
-      <FixedCallToAction to="edit">Edit</FixedCallToAction>
+    <div className="p-3">
+      <div className="rounded-xl border-[1px] border-zinc-600 overflow-hidden">
+        <AvatarList items={items} onSelect={onSelect} />
+        <FixedCallToAction to="edit">Edit</FixedCallToAction>
+      </div>
     </div>
   );
 };

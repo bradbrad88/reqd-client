@@ -17,7 +17,6 @@ import Orders from "./pages/Orders";
 import OrderList from "features/orderForm/OrderList";
 import OrderDetail from "features/orderForm/OrderDetails";
 import EditOrder from "features/orderForm/EditOrder";
-import OrderVendorList from "features/orderForm/OrderVendorList";
 import SubmitVendorOrder from "features/orderForm/SubmitVendorOrder";
 
 import Areas from "./pages/Areas";
@@ -35,6 +34,8 @@ import ManageInventory from "features/inventory/ManageInventory";
 import Shell from "common/Shell";
 import CreateArea from "features/areas/CreateArea";
 import AddVendorToVenue from "features/vendors/AddVendorToVenue";
+import EditOrderOutlet from "features/orderForm/EditOrderOutlet";
+import OrderSummary from "features/orderForm/OrderSummary";
 
 const queryClient = new QueryClient();
 
@@ -48,8 +49,10 @@ function App() {
               <Route path="" element={<Orders />}>
                 <Route path="" element={<OrderList />} />
                 <Route path=":orderId" element={<OrderDetail />}>
-                  <Route path="" element={<OrderVendorList />} />
-                  <Route path="edit" element={<EditOrder />} />
+                  <Route path="" element={<OrderSummary />} />
+                  <Route path="edit" element={<EditOrder />}>
+                    <Route path=":areaId" element={<EditOrderOutlet />} />
+                  </Route>
                   <Route path=":vendorId" element={<SubmitVendorOrder />} />
                 </Route>
               </Route>

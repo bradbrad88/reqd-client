@@ -10,6 +10,14 @@ export type InventoryItem = {
   };
   size: number;
   unitOfMeasurement: { value: string };
+  defaultSupply: SupplyDetails | null;
+};
+
+export type SupplyDetails = {
+  vendorId: string;
+  packageType: { value: string; plural: string };
+  packageQuantity: number;
+  vendorRangeId: string;
 };
 
 export type InventoryList = InventoryItem[];

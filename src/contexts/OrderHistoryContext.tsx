@@ -1,53 +1,46 @@
-import { createContext, useMemo } from "react";
-import { OrderHistory } from "api/orders";
+import { createContext } from "react";
+import { OrderDetail, OrderHistory } from "api/orders";
 import { useOrderHistory } from "src/hooks/useOrders";
-import { useProductList } from "src/hooks/useProducts";
-
-type ProductHistory = { [key: string]: number[] };
+import { createArrayOfLength } from "utils/arrays";
+import { QueryStatus } from "react-query";
 
 type ContextType = {
-  orderHistory: OrderHistory[];
-  productHistory: ProductHistory;
-  dates: Date[];
+  productHistory: OrderHistory["products"];
+  periods: OrderHistory["periods"];
+  status: QueryStatus;
 };
 
 type Props = {
   venueId: string;
-  dates: Date[];
-  orderId: string;
+  order: OrderDetail;
+  historyLength?: number;
   children?: React.ReactNode;
 };
 
 const Context = createContext<ContextType | null>(null);
 
-export const OrderHistoryProvider = ({ venueId, dates, orderId, children }: Props) => {
-  const { data: orders } = useOrderHistory(venueId, dates, orderId);
-  const { data: products } = useProductList(venueId);
-  const productHistory = useMemo(() => {
-    const productHistory = {} as ProductHistory;
-    for (const order of orders) {
-      // Make a map of products in the order to cut down lookup time
-      const orderProductsMap = new Map();
-      for (const product of order.products) {
-        orderProductsMap.set(product.productId, product);
-      }
-      // Loop through all products in venue inventory and assign order history array to them
-      for (const product of products) {
-        const arr = productHistory[product.id] || [];
-        const amount = orderProductsMap.get(product.id)?.quantity || 0;
-        productHistory[product.id] = [amount, ...arr];
-      }
-    }
-
-    return productHistory;
-  }, [orders, products]);
-
-  const dateArray = useMemo(() => {
-    return orders.map(order => new Date(order.week)).reverse();
-  }, [orders]);
+export const OrderHistoryProvider = ({
+  venueId,
+  order,
+  children,
+  historyLength = 6,
+}: Props) => {
+  const dates = createArrayOfLength(historyLength).map(idx => {
+    const date = new Date(order.createdAt);
+    date.setDate(date.getDate() - 7 * idx);
+    return date;
+  });
+  const { history, status } = useOrderHistory(venueId, dates, order.id);
+  console.log(history?.periods);
 
   return (
-    <Context.Provider value={{ orderHistory: orders, productHistory, dates: dateArray }}>
+    <Context.Provider
+      value={{
+        productHistory: history?.products || {},
+        periods: history?.periods || [],
+        status,
+      }}
+    >
       {children}
     </Context.Provider>
   );

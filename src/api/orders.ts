@@ -1,12 +1,15 @@
 import axios from "config/axios";
 import { axiosHandler } from "./axiosHandler";
+import { SupplyDetails } from "./inventory";
+
+type VendorSummary = { vendorId: string; vendorName: string; productCount: number };
 
 export type OrderList = {
   id: string;
   venueId: string;
   createdAt: string;
   updatedAt: string;
-  areas: string[];
+  vendorSummary: VendorSummary[];
 }[];
 
 export type OrderDetail = {
@@ -14,32 +17,69 @@ export type OrderDetail = {
   venueId: string;
   createdAt: string;
   updatedAt: string;
-  items: {
-    productId: string;
-    totalAmount: number;
-    areaAmounts: { productLocationId: string; amount: number }[];
+  products: {
+    [key: string]: {
+      productId: string;
+      quantity: number;
+      supplyDetails: SupplyDetails | null;
+    };
+  };
+  vendorSummary: VendorSummary[];
+};
+
+export type OrderVendorSummary = {
+  vendor: { id: string; vendorName: string; logo?: string };
+  products: {
+    id: string;
+    quantity: number;
+    displayName: string;
+    packageQuantity: number;
+    packageType: { value: string; plural: string };
+    unitOfMeasurement: { value: string } | undefined;
+    unitType: { value: string; plural: string };
+    size: number;
   }[];
 };
 
 export type OrderHistory = {
-  week: string;
-  products: { productId: string; quantity: number }[];
+  periods: Array<[string, string]>;
+  products: {
+    [product: string]: Array<{
+      quantity: number;
+    }>;
+  };
 };
 
-const createOrder = async ({ venueId }: { venueId: string }) => {
-  return await axios.post<{ id: string; createdAt: Date }>(`/venue/${venueId}/orders`);
+export type CreateOrderVars = {
+  orderId: string;
+  venueId: string;
 };
 
-const setProductAmount = async ({
-  id,
-  venueId,
-  update,
-}: OrderDetail & {
-  update: { productId: string; productLocationId: string; amount: number };
-}) => {
-  return await axios.post<OrderDetail>(
-    `/venue/${venueId}/orders/${id}/product-amount`,
-    update
+export type SetProductQuantityVars = {
+  orderId: string;
+  venueId: string;
+  productId: string;
+  quantity: number;
+  supplyDetails?: string;
+};
+
+export type GetVendorSummaryVars = {
+  orderId: string;
+  venueId: string;
+  vendorId: string;
+};
+
+const createOrder = async ({ venueId, ...data }: CreateOrderVars) => {
+  return await axios.post(`/venue/${venueId}/orders`, data);
+};
+
+const setProductQuantity = async ({ orderId, venueId, ...data }: SetProductQuantityVars) => {
+  return await axios.put(`/venue/${venueId}/orders/${orderId}/quantity`, data);
+};
+
+const getVendorSummary = async ({ venueId, vendorId, orderId }: GetVendorSummaryVars) => {
+  return await axios.get<OrderVendorSummary>(
+    `/venue/${venueId}/orders/detail/${orderId}/${vendorId}`
   );
 };
 
@@ -61,14 +101,14 @@ const getOrderHistory = async ({
       return date.toJSON();
     })
     .join(",");
-  return await axios.get<OrderHistory[]>(`/venue/${venueId}/orders/history`, {
+  return await axios.get<OrderHistory>(`/venue/${venueId}/orders/history/${orderId}`, {
     params: {
       dates: dateString,
-      orderId,
     },
   });
 };
 
 export const createOrderApi = axiosHandler(createOrder);
-export const setProductAmountApi = axiosHandler(setProductAmount);
+export const setProductQuantityApi = axiosHandler(setProductQuantity);
+export const getVendorSummaryApi = axiosHandler(getVendorSummary);
 export const getOrderHistoryApi = axiosHandler(getOrderHistory);

@@ -1,50 +1,77 @@
-import { useMemo } from "react";
-import { formatDayMonth } from "src/utils/dates";
+import { AreaProduct, ProductLine } from "api/areas";
+import { SupplyDetails } from "api/inventory";
+import { formatDayMonth } from "utils/dates";
 import { useOrderHistoryContext, useVenueContext } from "src/hooks/useContexts";
-import { useSetProductAmount } from "src/hooks/useOrders";
-import { createArrayOfLength } from "src/utils/arrays";
-import type { ProductLocationAreaMap } from "./EditOrder";
-import type { OrderDetail } from "api/orders";
-import type { ProductLocation } from "api/areas";
+import { useSetProductQuantity } from "src/hooks/useOrders";
+import Card from "common/Card";
+import Button from "common/Button";
+
+import type { OrderDetail, OrderHistory } from "api/orders";
 
 type Props = {
-  productLocation: ProductLocation;
   order: OrderDetail;
-  product: OrderDetail["items"][number] | undefined;
-  productLocationAreaMap: ProductLocationAreaMap;
   areaId: string;
+  product: AreaProduct;
+  productLine: ProductLine;
+  supplyDetails: SupplyDetails | null;
 };
 
-const ItemForm = ({
-  order,
-  productLocation,
-  product,
-  productLocationAreaMap,
-  areaId,
-}: Props) => {
-  const { venueId } = useVenueContext();
-  const { productHistory, dates } = useOrderHistoryContext();
-  const incrementAmount = productLocation.packageQuantity;
+const ItemForm = ({ order, product, supplyDetails }: Props) => {
+  const orderQuantity = order.products[product.id]?.quantity || 0;
+  const productExistsInOrder = !!order.products[product.id];
+  const { periods, productHistory } = useOrderHistoryContext();
 
-  const { mutate } = useSetProductAmount(venueId, order.id);
+  return (
+    <Card className="p-3">
+      <ProductDescription product={product} highlight={orderQuantity > 0} />
+      <RenderHistory
+        periods={periods}
+        productHistory={productHistory[product.id] || []}
+        currentOrderQuantity={orderQuantity}
+      />
 
-  const areaAmount = useMemo(() => {
-    if (!product) return 0;
-    const productAmount = product.areaAmounts.find(productAmount => {
-      return productAmount.productLocationId === productLocation.id;
-    });
+      {/* Display Order Amount and Increment / Decrement Buttons */}
+      {supplyDetails ? (
+        <SupplyControl
+          orderId={order.id}
+          productId={product.id}
+          orderQuantity={orderQuantity}
+          supplyDetails={supplyDetails}
+          unitTypePlural={product.unitType.plural}
+          productExists={productExistsInOrder}
+        />
+      ) : (
+        <MissingSupplyDetails />
+      )}
+    </Card>
+  );
+};
 
-    return productAmount?.amount || 0;
-  }, [product, productLocation.id]);
+function RenderHistory({
+  periods,
+  productHistory,
+  currentOrderQuantity,
+}: {
+  periods: Array<[string, string]>;
+  productHistory: OrderHistory["products"][string];
+  currentOrderQuantity: number;
+}) {
+  const renderDates = () => {
+    const dateElements = periods.map(([startDate]) => (
+      <div key={new Date(startDate).getTime()} className="text-right text-sm pr-2">
+        {formatDayMonth(new Date(startDate))}
+      </div>
+    ));
+    return <>{dateElements}</>;
+  };
 
   const renderHistory = () => {
     const history =
-      productHistory[productLocation.productId] ||
-      createArrayOfLength(dates.length).map(() => 0);
-    const historyElements = history.map((amount, idx) => {
-      const currentDate = idx === dates.length - 1;
-      const isCurrent = currentDate && product && product.totalAmount > 0;
-      const totalAmount = currentDate ? amount + (product?.totalAmount || 0) : amount;
+      productHistory.length === 0 ? periods.map(() => ({ quantity: 0 })) : productHistory;
+    const historyElements = history.map(({ quantity }, idx) => {
+      const isCurrentDate = idx === periods.length - 1;
+      const isCurrent = isCurrentDate && currentOrderQuantity > 0;
+      const totalAmount = isCurrentDate ? quantity + currentOrderQuantity : quantity;
       return (
         <div
           key={idx}
@@ -60,168 +87,137 @@ const ItemForm = ({
     return <>{historyElements}</>;
   };
 
-  const renderDates = () => {
-    const dateElements = dates.map(date => (
-      <div key={date.getTime()} className="text-right text-sm pr-2">
-        {formatDayMonth(date)}
-      </div>
-    ));
-    return <>{dateElements}</>;
-  };
+  return (
+    <div
+      className="grid pb-1"
+      style={{
+        gridTemplateColumns: `repeat(${periods.length}, minmax(0, 1fr))`,
+      }}
+    >
+      {renderDates()}
+      {renderHistory()}
+    </div>
+  );
+}
 
+function SupplyControl({
+  orderQuantity,
+  supplyDetails,
+  unitTypePlural,
+  orderId,
+  productId,
+  productExists,
+}: {
+  orderQuantity: number;
+  supplyDetails: SupplyDetails;
+  unitTypePlural: string;
+  orderId: string;
+  productId: string;
+  productExists: boolean;
+}) {
+  const { venueId } = useVenueContext();
+  const { setProductQuantity } = useSetProductQuantity();
   const onIncrease = () => {
-    const amount = areaAmount + incrementAmount;
-    mutate({
-      ...order,
-      update: {
-        productId: productLocation.productId,
-        productLocationId: productLocation.id,
-        amount,
-      },
+    const incrementAmount = supplyDetails!.packageQuantity || 1;
+    const quantity = orderQuantity + incrementAmount;
+    setProductQuantity({
+      venueId,
+      orderId,
+      productId,
+      quantity,
+      supplyDetails: productExists ? undefined : supplyDetails.vendorRangeId,
     });
   };
 
   const onDecrease = () => {
-    const newAmount = areaAmount - incrementAmount;
-    const amount = newAmount < 0 ? 0 : newAmount;
-    mutate({
-      ...order,
-      update: {
-        productId: productLocation.productId,
-        productLocationId: productLocation.id,
-        amount,
-      },
+    const incrementAmount = supplyDetails!.packageQuantity || 1;
+    const newAmount = orderQuantity - incrementAmount;
+    const quantity = newAmount < 0 ? 0 : newAmount;
+    setProductQuantity({
+      venueId,
+      orderId,
+      productId,
+      quantity,
+      supplyDetails: productExists ? undefined : supplyDetails.vendorRangeId,
     });
   };
-
   return (
-    <div className="bg-zinc-950 border-zinc-700 border-[1px] p-2 py-2 rounded-md flex flex-col gap-1">
-      <ProductDescription product={productLocation} highlight={areaAmount > 0} />
-      {/* Display Sales / Order History Table */}
-      <div
-        className="grid pb-1"
-        style={{
-          gridTemplateColumns: `repeat(${dates.length}, minmax(0, 1fr))`,
-        }}
-      >
-        {renderDates()}
-        {renderHistory()}
-      </div>
-      {/* Display Order Amount and Increment / Decrement Buttons */}
-      <div className="grid grid-cols-[1fr,_min-content] items-center">
-        <OrderAmount product={productLocation} areaAmount={areaAmount} />
-        <div className="flex gap-6">
-          <button
-            className="w-12 p-1 h-min border-indigo-600 bg-zinc-950 border-[1px] font-bold text-xl"
-            onClick={onDecrease}
-          >
-            -
-          </button>
-          <button
-            className="w-12 p-1 h-min bg-zinc-950 outline-none focus-within:outline-none focus-visible:outline-none focus-within:border-lime-300 border-lime-600 border-[1px] font-bold text-xl"
-            onClick={onIncrease}
-          >
-            +
-          </button>
-        </div>
-      </div>
-      <ItemValuesBreakdown
-        product={product!}
-        areaId={areaId}
-        productLocationAreaMap={productLocationAreaMap}
+    <div className="grid grid-cols-[1fr,_min-content] items-center">
+      <OrderAmount
+        unitType={unitTypePlural}
+        orderQuantity={orderQuantity}
+        supplyDetails={supplyDetails}
       />
+      <div className="flex gap-6">
+        <button
+          className="w-12 p-1 h-min border-indigo-600 bg-zinc-950 border-[1px] font-bold text-xl"
+          onClick={onDecrease}
+        >
+          -
+        </button>
+        <button
+          className="w-12 p-1 h-min bg-zinc-950 outline-none focus-within:outline-none focus-visible:outline-none focus-within:border-lime-300 border-lime-600 border-[1px] font-bold text-xl"
+          onClick={onIncrease}
+        >
+          +
+        </button>
+      </div>
     </div>
   );
-};
+}
 
 function ProductDescription({
   product,
   highlight,
 }: {
-  product: ProductLocation;
+  product: AreaProduct;
   highlight?: boolean;
 }) {
   const dynamicStyles = highlight ? "text-white" : "text-zinc-200 italic";
 
   return (
-    <div className={"text-lg font-bold " + dynamicStyles}>
-      {product.displayName} {product.unitType}s {product.size}
-      {product.unitOfMeasurement} <br />
+    <div className={"text-base font-bold " + dynamicStyles}>
+      <p>{product.displayName}</p>
+      <p className="text-sm italic text-zinc-300">
+        {product.size}
+        {product.unitOfMeasurement?.value} {product.unitType.plural}
+      </p>
     </div>
   );
 }
 
 function OrderAmount({
-  areaAmount,
-  product: { packageQuantity, packageType, unitType },
+  orderQuantity,
+  unitType,
+  supplyDetails,
 }: {
-  areaAmount: number;
-  product: ProductLocation;
+  orderQuantity: number;
+  unitType: string;
+  supplyDetails: SupplyDetails;
 }) {
-  const packageAmount = areaAmount / packageQuantity;
-  const dynamicStyles = areaAmount > 0 ? "text-lime-300" : "text-indigo-300";
+  const { packageQuantity, packageType } = supplyDetails;
+  const packageAmount = orderQuantity / packageQuantity;
+  const dynamicStyles = orderQuantity > 0 ? "text-lime-300" : "text-indigo-300";
 
   return (
     <div className={"font-bold " + dynamicStyles}>
-      {packageAmount} {packageType}
-      {packageAmount === 1 ? "" : "s"} ({areaAmount} {unitType}
-      {areaAmount === 1 ? "" : "s"})
+      {packageAmount} {packageType.plural} ({orderQuantity} {unitType})
     </div>
   );
 }
 
 export default ItemForm;
 
-type BreakdownProps = {
-  product: OrderDetail["items"][number] | undefined;
-  areaId: string;
-  productLocationAreaMap: ProductLocationAreaMap;
-};
-
-function ItemValuesBreakdown({ product, areaId, productLocationAreaMap }: BreakdownProps) {
-  const renderBreakdown = () => {
-    if (!product) return null;
-    const productAreasMap = product.areaAmounts.reduce(
-      (map, { amount, productLocationId }) => {
-        const area = productLocationAreaMap[productLocationId] || {
-          areaName: "Unknown area",
-          areaId: "",
-        };
-
-        const prev = map.get(area.areaId) || { ...area, amount: 0 };
-        map.set(area.areaId, { ...prev, amount: (prev?.amount || 0) + amount });
-        return map;
-      },
-      new Map<string, { amount: number; areaName: string; areaId: string }>()
-    );
-
-    const productAreas = Array.from(productAreasMap.values());
-
-    productAreas.sort(a => {
-      if (a.areaId === areaId) return -1;
-      return 0;
-    });
-
-    return productAreas.map(area => <BreakdownItem area={area} key={area.areaId} />);
-  };
-
-  const breakdown = renderBreakdown();
-
-  return <>{breakdown && breakdown.length > 1 && <div>{breakdown}</div>}</>;
-}
-
-type BreakdownItemProps = {
-  area: {
-    areaName: string;
-    areaId: string;
-    amount: number;
-  };
-};
-
-function BreakdownItem({ area }: BreakdownItemProps) {
+function MissingSupplyDetails() {
   return (
-    <div>
-      {area.areaName}:{area.amount}
+    <div className="flex gap-3">
+      <p className="text-sm leading-tight italic text-zinc-300">
+        This product doesn't have a default vendor. We need to know who you order this from,
+        and how it's packaged
+      </p>
+      <Button className="h-8 self-end" variant={"outline"}>
+        Setup
+      </Button>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import axios from "../config/axios";
 import { axiosHandler } from "./axiosHandler";
+import { SupplyDetails } from "./inventory";
 
 export type StorageSpaceLocation = { storageSpace: string };
 export type StorageSectionLocation = StorageSpaceLocation & { sectionId: string };
@@ -23,13 +24,22 @@ export type AreaDetail = {
 
 export type StorageSpaceMap = Record<string, StorageSpace>;
 
-export type StorageSpace = {
+export type StorageSpace = StorageSpaceDetailedLayout | StorageSpaceListLayout;
+
+export type StorageSpaceDetailedLayout = {
+  layoutType: "layout";
   storageName: string;
   sections: StorageSectionMap;
   shelves: StorageShelfMap;
   spots: StorageSpotMap;
   sectionLayout: string[];
   currentIdSequence: string;
+};
+
+export type StorageSpaceListLayout = {
+  layoutType: "list";
+  storageName: string;
+  layout: string[];
 };
 
 export type StorageSectionMap = Record<string, StorageSection>;
@@ -49,12 +59,13 @@ export type StorageShelf = {
 };
 
 export type AreaProduct = {
-  productId: string;
+  id: string;
   displayName: string;
   size?: number;
   image: string;
   unitOfMeasurement?: { value: string };
   unitType: { value: string; plural: string };
+  defaultSupply: SupplyDetails | null;
 };
 
 export type StorageSpot = {
