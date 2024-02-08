@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { cn } from "utils/cn";
 import { AreaProduct, ProductLine } from "api/areas";
 import { SupplyDetails } from "api/inventory";
 import { formatDayMonth } from "utils/dates";
@@ -177,15 +178,29 @@ function ProductDescription({
   product: AreaProduct;
   highlight?: boolean;
 }) {
-  const dynamicStyles = highlight ? "text-white" : "text-zinc-200 italic";
-
   return (
-    <div className={"text-base font-bold " + dynamicStyles}>
-      <p>{product.displayName}</p>
-      <p className="text-sm italic text-zinc-300">
-        {product.size}
-        {product.unitOfMeasurement?.value} {product.unitType.plural}
-      </p>
+    <div
+      className={cn(
+        "text-base font-bold flex gap-3",
+        highlight ? "text-white" : "text-zinc-200 italic"
+      )}
+    >
+      <div className="flex h-14 w-14 bg-zinc-800 rounded-full overflow-hidden">
+        {product.image ? (
+          <img src={product.image} alt={product.displayName + " product"} />
+        ) : (
+          <div className="text-xs text-zinc-400 place-self-center p-2 text-center truncate">
+            {product.displayName}
+          </div>
+        )}
+      </div>
+      <div>
+        <p>{product.displayName}</p>
+        <p className="text-sm italic text-zinc-300">
+          {product.size}
+          {product.unitOfMeasurement?.value} {product.unitType.plural}
+        </p>
+      </div>
     </div>
   );
 }
