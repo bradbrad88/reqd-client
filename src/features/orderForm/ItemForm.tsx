@@ -1,7 +1,9 @@
+import { useCallback, useState } from "react";
 import { AreaProduct, ProductLine } from "api/areas";
 import { SupplyDetails } from "api/inventory";
 import { formatDayMonth } from "utils/dates";
 import { useOrderHistoryContext, useVenueContext } from "src/hooks/useContexts";
+import useDebounce from "src/hooks/useDebounce";
 import { useSetProductQuantity } from "src/hooks/useOrders";
 import Card from "common/Card";
 import Button from "common/Button";
@@ -17,9 +19,31 @@ type Props = {
 };
 
 const ItemForm = ({ order, product, supplyDetails }: Props) => {
-  const orderQuantity = order.products[product.id]?.quantity || 0;
+  const { venueId } = useVenueContext();
   const productExistsInOrder = !!order.products[product.id];
   const { periods, productHistory } = useOrderHistoryContext();
+  const initialQuantity = order.products[product.id]?.quantity || 0;
+  const [orderQuantity, setQuantityState] = useState(initialQuantity);
+  const { setProductQuantity } = useSetProductQuantity();
+  const cb = useCallback(
+    (quantity: number) => {
+      if (!supplyDetails) return;
+      setProductQuantity({
+        venueId,
+        orderId: order.id,
+        productId: product.id,
+        quantity,
+        supplyDetails: productExistsInOrder ? undefined : supplyDetails.vendorRangeId,
+      });
+    },
+    [order.id, product.id, productExistsInOrder, setProductQuantity, supplyDetails, venueId]
+  );
+  const { debounce: debounceQuantity } = useDebounce(cb, 1000);
+
+  const setQuantity = (quantity: number) => {
+    setQuantityState(quantity);
+    debounceQuantity(quantity);
+  };
 
   return (
     <Card className="p-3">
@@ -33,12 +57,10 @@ const ItemForm = ({ order, product, supplyDetails }: Props) => {
       {/* Display Order Amount and Increment / Decrement Buttons */}
       {supplyDetails ? (
         <SupplyControl
-          orderId={order.id}
-          productId={product.id}
           orderQuantity={orderQuantity}
           supplyDetails={supplyDetails}
           unitTypePlural={product.unitType.plural}
-          productExists={productExistsInOrder}
+          setQuantity={setQuantity}
         />
       ) : (
         <MissingSupplyDetails />
@@ -104,42 +126,24 @@ function SupplyControl({
   orderQuantity,
   supplyDetails,
   unitTypePlural,
-  orderId,
-  productId,
-  productExists,
+  setQuantity,
 }: {
   orderQuantity: number;
   supplyDetails: SupplyDetails;
   unitTypePlural: string;
-  orderId: string;
-  productId: string;
-  productExists: boolean;
+  setQuantity: (quantity: number) => void;
 }) {
-  const { venueId } = useVenueContext();
-  const { setProductQuantity } = useSetProductQuantity();
   const onIncrease = () => {
     const incrementAmount = supplyDetails!.packageQuantity || 1;
     const quantity = orderQuantity + incrementAmount;
-    setProductQuantity({
-      venueId,
-      orderId,
-      productId,
-      quantity,
-      supplyDetails: productExists ? undefined : supplyDetails.vendorRangeId,
-    });
+    setQuantity(quantity);
   };
 
   const onDecrease = () => {
     const incrementAmount = supplyDetails!.packageQuantity || 1;
     const newAmount = orderQuantity - incrementAmount;
     const quantity = newAmount < 0 ? 0 : newAmount;
-    setProductQuantity({
-      venueId,
-      orderId,
-      productId,
-      quantity,
-      supplyDetails: productExists ? undefined : supplyDetails.vendorRangeId,
-    });
+    setQuantity(quantity);
   };
   return (
     <div className="grid grid-cols-[1fr,_min-content] items-center">
