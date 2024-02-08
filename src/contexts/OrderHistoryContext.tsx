@@ -1,8 +1,8 @@
 import { createContext } from "react";
+import { QueryStatus } from "react-query";
+import { createArrayOfLength } from "utils/arrays";
 import { OrderDetail, OrderHistory } from "api/orders";
 import { useOrderHistory } from "src/hooks/useOrders";
-import { createArrayOfLength } from "utils/arrays";
-import { QueryStatus } from "react-query";
 
 type ContextType = {
   productHistory: OrderHistory["products"];
@@ -31,7 +31,6 @@ export const OrderHistoryProvider = ({
     return date;
   });
   const { history, status } = useOrderHistory(venueId, dates, order.id);
-  console.log(history?.periods);
 
   return (
     <Context.Provider
