@@ -20,7 +20,7 @@ const OrderList = () => {
     await createOrder({ orderId, venueId });
     nav(orderId + "/edit");
   };
-  const showVendorsLength = 3;
+  const showVendorsLength = 4;
 
   const renderOrders = () => {
     const breakdownInit = {
@@ -64,17 +64,21 @@ const OrderList = () => {
             : ` and ${remainingAreasLength} more vendors`;
 
         const renderCondensedVendors = () => {
-          return condensedVendors
-            .map(vendor =>
-              vendor.vendorName
-                ? `${vendor.productCount} ${vendor.vendorName} product${
-                    vendor.productCount === 1 ? "" : "s"
-                  }`
-                : `${vendor.productCount} product${
-                    vendor.productCount === 1 ? "" : "s"
-                  } from an unknown vendor`
-            )
-            .join(", ");
+          if (condensedVendors.length < 1) return "No products in this order yet";
+          const vendorTextArray = condensedVendors.map(vendor =>
+            vendor.vendorName
+              ? `${vendor.productCount} ${vendor.vendorName} product${
+                  vendor.productCount === 1 ? "" : "s"
+                }`
+              : `${vendor.productCount} product${
+                  vendor.productCount === 1 ? "" : "s"
+                } from an unknown vendor`
+          );
+          if (remainingAreas.length < 1) {
+            return vendorTextArray.slice(0, -1).join(", ") + " and " + vendorTextArray.at(-1);
+          } else {
+            return vendorTextArray.join(", ");
+          }
         };
         return {
           id: order.id,
