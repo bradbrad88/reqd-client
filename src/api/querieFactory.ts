@@ -28,7 +28,7 @@ export const listFactory =
         return res.data.data;
       }
     );
-    return { data: data || ([] as Data), status };
+    return { data, status };
   };
 
 export const detailFactory =

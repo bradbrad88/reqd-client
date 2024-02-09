@@ -9,8 +9,10 @@ export type InventoryItem = {
     plural: string;
   };
   size: number;
-  unitOfMeasurement: { value: string };
+  unitOfMeasurement?: { value: string };
+  image?: string;
   defaultSupply: SupplyDetails | null;
+  isInInventory: boolean;
 };
 
 export type SupplyDetails = {
@@ -18,9 +20,30 @@ export type SupplyDetails = {
   packageType: { value: string; plural: string };
   packageQuantity: number;
   vendorRangeId: string;
+  vendor: {
+    vendorName: string;
+    logo: string;
+  };
 };
 
-export type InventoryList = InventoryItem[];
+export type InventoryList = {
+  products: InventoryItem[];
+  count: number;
+  page: number;
+  pageSize: number;
+};
+
+export type ChangeDefaultSupplierVars = {
+  venueId: string;
+  productId: string;
+  defaultSupply: string;
+  isNew?: boolean;
+};
+
+export type GetProductVendorOptionsVars = {
+  venueId: string;
+  productId: string;
+};
 
 const addProductToInventory = async ({
   venueId,
@@ -44,5 +67,24 @@ const removeProductFromInventory = async ({
   return await axios.delete(`/venue/${venueId}/inventory/${productId}`);
 };
 
+const changeDefaultSupplier = async ({
+  venueId,
+  productId,
+  ...data
+}: ChangeDefaultSupplierVars) => {
+  return await axios.put(`/venue/${venueId}/inventory/${productId}`, data);
+};
+
+const getProductVendorOptions = async ({
+  venueId,
+  productId,
+}: GetProductVendorOptionsVars) => {
+  return await axios.get<SupplyDetails[]>(
+    `/venue/${venueId}/inventory/detail/${productId}/vendors`
+  );
+};
+
 export const addProductToInventoryApi = axiosHandler(addProductToInventory);
 export const removeProductFromInventoryApi = axiosHandler(removeProductFromInventory);
+export const changeDefaultSupplierApi = axiosHandler(changeDefaultSupplier);
+export const getProductVendorOptionsApi = axiosHandler(getProductVendorOptions);

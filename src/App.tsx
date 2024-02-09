@@ -36,6 +36,7 @@ import CreateArea from "features/areas/CreateArea";
 import AddVendorToVenue from "features/vendors/AddVendorToVenue";
 import EditOrderOutlet from "features/orderForm/EditOrderOutlet";
 import OrderSummary from "features/orderForm/OrderSummary";
+import EditInventoryItem from "features/inventory/EditInventoryItem";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,7 @@ function App() {
                 <Route path="inventory" element={<Inventory />}>
                   <Route path="" element={<InventoryList />} />
                   <Route path="add" element={<ManageInventory />} />
+                  <Route path=":productId" element={<EditInventoryItem />} />
                 </Route>
               </Route>
             </Routes>
