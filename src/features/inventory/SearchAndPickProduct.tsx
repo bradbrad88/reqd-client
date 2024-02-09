@@ -4,6 +4,7 @@ import { useInventoryList } from "src/hooks/useInventory";
 import AvatarList from "common/AvatarList";
 import SearchBar from "common/SearchBar";
 import Button from "common/Button";
+import Spinner from "common/Spinner";
 import { XIcon } from "common/icons";
 
 type Props = {
@@ -20,16 +21,18 @@ const SearchAndPickProduct = ({ onValueChange, close = () => {} }: Props) => {
     setQuery(query || undefined);
   };
 
-  const items = inventory.map(item => ({
+  const items = inventory?.products.map(item => ({
     id: item.productId,
     displayName: item.displayName,
-    description: `${item.size}${item.unitOfMeasurement.value} ${item.unitType.plural}`,
+    description: `${item.size}${item.unitOfMeasurement ? item.unitOfMeasurement.value : ""} ${
+      item.unitType.plural
+    }`,
   }));
 
   return (
     <div className="h-full flex flex-col gap-6">
       <div className="h-full overflow-y-auto border-[1px] border-zinc-600 rounded-t-2xl overflow-hidden">
-        <AvatarList items={items} onSelect={onValueChange} />
+        {items ? <AvatarList items={items} onSelect={onValueChange} /> : <Spinner />}
       </div>
       <div className="flex items-center">
         <SearchBar onSearch={onSearch} autoFocus />

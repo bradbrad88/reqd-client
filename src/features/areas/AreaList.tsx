@@ -12,6 +12,7 @@ const AreaList = () => {
   const nav = useNavigate();
 
   const renderAreas = () => {
+    if (!areaList) return <Spinner />;
     return areaList.map(area => <Area key={area.id} {...area} />);
   };
 

@@ -5,6 +5,7 @@ import { useVenueContext } from "src/hooks/useContexts";
 import { useCreateOrder, useOrderList } from "src/hooks/useOrders";
 import FixedCallToAction from "common/FixedCallToAction";
 import AvatarList from "common/AvatarList";
+import Spinner from "common/Spinner";
 
 import type { OrderList as OrderListType } from "api/orders";
 import type { AvatarItem } from "common/AvatarList";
@@ -31,7 +32,7 @@ const OrderList = () => {
     const today = getStartOfToday();
     const week = getStartOfWeek();
 
-    const breakdown = orders.reduce((breakdown, order) => {
+    const breakdown = orders?.reduce((breakdown, order) => {
       const date = new Date(order.createdAt);
 
       if (date.getTime() > today.getTime()) {
@@ -84,6 +85,8 @@ const OrderList = () => {
 
       return <AvatarList items={items} onSelect={onSelect} />;
     }
+
+    if (!breakdown) return <Spinner />;
 
     return (
       <>
