@@ -37,7 +37,7 @@ const SearchBar = ({
         placeholder={placeholder}
       />
       <span className="absolute right-3 top-1/2 -translate-y-1/2">
-        <SearchIcon />
+        <SearchIcon size={30} className="fill-zinc-500" />
       </span>
     </div>
   );
